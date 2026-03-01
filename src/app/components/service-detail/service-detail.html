@@ -1,0 +1,62 @@
+<div class="max-w-4xl mx-auto px-4 py-12">
+
+  <div *ngIf="loading" class="text-center text-gray-500 py-12">Loading service...</div>
+  <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load service.</div>
+
+  <div *ngIf="!loading && !error && service">
+
+    <!-- Back Button -->
+    <a href="/services" class="text-blue-600 hover:underline text-sm mb-6 inline-block">← Back to Services</a>
+
+    <!-- Service Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100">
+
+      <!-- Category Badge -->
+      <div class="bg-blue-100 text-blue-600 text-sm font-semibold px-3 py-1 rounded-full inline-block mb-4">
+        {{ service.category }}
+      </div>
+
+      <h1 class="text-3xl font-bold text-gray-800 mb-3">{{ service.title }}</h1>
+      <p class="text-gray-500 text-lg mb-6">{{ service.description }}</p>
+
+      <!-- Price -->
+      <div class="flex items-center justify-between mb-8">
+        <span class="text-3xl font-bold text-blue-600">${{ service.price }}</span>
+        <span class="text-sm text-gray-400">Posted {{ service.created_at | date:'mediumDate' }}</span>
+      </div>
+
+      <!-- Provider Info -->
+      <div class="bg-gray-50 rounded-xl p-4 mb-8">
+        <h3 class="text-sm font-semibold text-gray-500 mb-3">SERVICE PROVIDER</h3>
+        <div class="flex items-center gap-4">
+          <div class="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
+            {{ service.provider?.user?.username?.charAt(0)?.toUpperCase() }}
+          </div>
+          <div>
+            <p class="font-bold text-gray-800">{{ service.provider?.user?.username }}</p>
+            <p class="text-sm text-gray-500">{{ service.provider?.service_area || 'Location not specified' }}</p>
+          </div>
+          <span class="ml-auto text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-medium">
+            {{ service.provider?.is_available ? 'Available' : 'Unavailable' }}
+          </span>
+        </div>
+        <p class="text-gray-500 text-sm mt-3">{{ service.provider?.bio || 'No bio provided.' }}</p>
+      </div>
+
+      <!-- Request Button -->
+      <div *ngIf="!requestSent">
+        <button (click)="sendRequest()" [disabled]="requestLoading"
+          class="w-full bg-blue-600 text-white py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50">
+          {{ requestLoading ? 'Sending Request...' : isLoggedIn ? 'Request This Service' : 'Login to Request' }}
+        </button>
+        <p *ngIf="!isLoggedIn" class="text-center text-gray-400 text-sm mt-2">You need to be logged in to request a service.</p>
+      </div>
+
+      <!-- Success Message -->
+      <div *ngIf="requestSent" class="bg-green-100 text-green-700 px-6 py-4 rounded-xl text-center font-semibold">
+        ✅ Request sent successfully! The provider will be in touch soon.
+      </div>
+
+    </div>
+  </div>
+</div>
