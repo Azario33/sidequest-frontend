@@ -1,0 +1,67 @@
+<div class="min-h-screen bg-blue-50 flex items-center justify-center px-4">
+  <div class="bg-white rounded-2xl shadow-lg p-8 w-full max-w-md">
+
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-blue-600">Side<span class="text-yellow-400">Quest</span></h1>
+      <p class="text-gray-500 mt-2">Create your account to get started.</p>
+    </div>
+
+    <div *ngIf="error" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
+      {{ error }}
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-gray-700 font-medium mb-1">Username</label>
+      <input [(ngModel)]="username" type="text" placeholder="Choose a username"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-gray-700 font-medium mb-1">Email</label>
+      <input [(ngModel)]="email" type="email" placeholder="Enter your email"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+    </div>
+
+    <div class="mb-2">
+      <label class="block text-gray-700 font-medium mb-1">Password</label>
+      <input [(ngModel)]="password" type="password" placeholder="Choose a password"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500" />
+    </div>
+
+    <!-- Password requirements -->
+    <div class="mb-4 bg-gray-50 rounded-lg p-3 text-xs space-y-1">
+      <p [class]="password.length >= 8 ? 'text-green-600' : 'text-gray-400'">
+        {{ password.length >= 8 ? '✅' : '○' }} At least 8 characters
+      </p>
+      <p [class]="/[A-Z]/.test(password) ? 'text-green-600' : 'text-gray-400'">
+        {{ /[A-Z]/.test(password) ? '✅' : '○' }} One uppercase letter
+      </p>
+      <p [class]="/[0-9]/.test(password) ? 'text-green-600' : 'text-gray-400'">
+        {{ /[0-9]/.test(password) ? '✅' : '○' }} One number
+      </p>
+      <p [class]="/[!@#$%^&*]/.test(password) ? 'text-green-600' : 'text-gray-400'">
+        {{ /[!@#$%^&*]/.test(password) ? '✅' : '○' }} One symbol (!@#$%^&*)
+      </p>
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-gray-700 font-medium mb-1">I am a...</label>
+      <select [(ngModel)]="role"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500">
+        <option value="customer">Customer — looking for services</option>
+        <option value="provider">Provider — offering services</option>
+      </select>
+    </div>
+
+    <button (click)="onSubmit()" [disabled]="loading"
+      class="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+      {{ loading ? 'Creating account...' : 'Create Account' }}
+    </button>
+
+    <p class="text-center text-gray-500 mt-6 text-sm">
+      Already have an account?
+      <a routerLink="/login" class="text-blue-600 font-semibold hover:underline">Login here</a>
+    </p>
+
+  </div>
+</div>
