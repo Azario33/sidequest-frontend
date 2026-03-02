@@ -1,0 +1,80 @@
+<div class="max-w-5xl mx-auto px-4 py-12">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">My Requests</h1>
+    <p class="text-gray-500 mt-1">Welcome back, {{ currentUser?.username }}! Track your service requests here.</p>
+  </div>
+
+  <div *ngIf="loading" class="text-center text-gray-500 py-12">Loading requests...</div>
+  <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load requests.</div>
+
+  <div *ngIf="!loading && !error">
+
+    <!-- Stats -->
+    <div class="grid grid-cols-3 gap-4 mb-8">
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-yellow-500">{{ getPendingCount() }}</p>
+        <p class="text-gray-500 text-sm">Pending</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-green-600">{{ getAcceptedCount() }}</p>
+        <p class="text-gray-500 text-sm">Accepted</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-red-500">{{ getDeclinedCount() }}</p>
+        <p class="text-gray-500 text-sm">Declined</p>
+      </div>
+    </div>
+
+    <!-- No Requests -->
+    <div *ngIf="requests.length === 0" class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
+      <p class="text-4xl mb-4">📭</p>
+      <p class="font-semibold text-lg">No requests yet</p>
+      <p class="text-sm mb-4">Browse services and send your first request!</p>
+      <a href="/services" class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">
+        Browse Services
+      </a>
+    </div>
+
+    <!-- Requests List -->
+    <div class="space-y-4">
+      <div *ngFor="let request of requests"
+        class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-gray-800">{{ request.service?.title }}</h3>
+            <p class="text-gray-500 text-sm">Provider: <span class="font-medium text-blue-600">{{ request.service?.provider?.user?.username }}</span></p>
+            <p class="text-gray-400 text-xs mt-1">{{ request.created_at | date:'medium' }}</p>
+          </div>
+
+          <!-- Status Badge -->
+          <span [class]="
+            request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
+            request.status === 'accepted' ? 'bg-green-100 text-green-700' :
+            'bg-red-100 text-red-700'
+            " class="px-3 py-1 rounded-full text-sm font-semibold">
+            {{ request.status | titlecase }}
+          </span>
+        </div>
+
+        <!-- Service Details -->
+        <div class="bg-gray-50 rounded-xl p-4 mb-3">
+          <div class="flex justify-between items-center">
+            <div>
+              <p class="text-sm text-gray-500">Category: <span class="font-medium">{{ request.service?.category }}</span></p>
+              <p class="text-sm text-gray-500">Location: <span class="font-medium">{{ request.service?.provider?.service_area || 'Not specified' }}</span></p>
+            </div>
+            <p class="text-blue-600 font-bold text-lg">${{ request.service?.price }}</p>
+          </div>
+        </div>
+
+        <p *ngIf="request.message" class="text-gray-500 text-sm bg-gray-50 rounded-lg p-3">
+          💬 {{ request.message }}
+        </p>
+
+      </div>
+    </div>
+  </div>
+</div>

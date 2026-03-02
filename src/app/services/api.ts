@@ -48,4 +48,8 @@ export class ApiService {
   createRequest(data: any): Observable<any> {
     return this.http.post(`${this.baseUrl}/requests/`, data, { headers: this.getHeaders() });
   }
+
+  updateRequest(id: number, data: any): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/requests/${id}/`, data, { headers: this.getHeaders() });
+  }
 }
