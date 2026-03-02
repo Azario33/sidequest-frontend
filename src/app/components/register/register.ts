@@ -16,35 +16,39 @@ export class RegisterComponent {
   email = '';
   password = '';
   role = 'customer';
-  error = '';
+  errorMessage = '';
   loading = false;
+
+  checks = {
+    length: false,
+    uppercase: false,
+    number: false,
+    symbol: false
+  };
 
   constructor(private authService: AuthService, private router: Router) {}
 
-  validatePassword(password: string): string | null {
-    if (password.length < 8) return 'Password must be at least 8 characters.';
-    if (!/[A-Z]/.test(password)) return 'Password must contain at least one uppercase letter.';
-    if (!/[0-9]/.test(password)) return 'Password must contain at least one number.';
-    if (!/[!@#$%^&*]/.test(password)) return 'Password must contain at least one symbol (!@#$%^&*).';
-    return null;
+  validatePassword() {
+    this.checks.length = this.password.length >= 8;
+    this.checks.uppercase = /[A-Z]/.test(this.password);
+    this.checks.number = /[0-9]/.test(this.password);
+    this.checks.symbol = /[!@#$%^&*]/.test(this.password);
   }
 
-  onSubmit() {
-    this.error = '';
+  register() {
+    this.errorMessage = '';
 
-    const passwordError = this.validatePassword(this.password);
-    if (passwordError) {
-      this.error = passwordError;
+    if (!this.username || !this.email || !this.password) {
+      this.errorMessage = 'Please fill in all fields.';
       return;
     }
 
-    if (!this.username || !this.email) {
-      this.error = 'Please fill in all fields.';
+    if (!this.checks.length || !this.checks.uppercase || !this.checks.number || !this.checks.symbol) {
+      this.errorMessage = 'Please make sure your password meets all requirements.';
       return;
     }
 
     this.loading = true;
-
     this.authService.register({
       username: this.username,
       email: this.email,
@@ -55,7 +59,7 @@ export class RegisterComponent {
         this.router.navigate(['/login']);
       },
       error: (err) => {
-        this.error = err.error?.error || 'Registration failed. Please try again.';
+        this.errorMessage = err.error?.error || 'Registration failed. Please try again.';
         this.loading = false;
       }
     });
