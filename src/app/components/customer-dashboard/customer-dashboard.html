@@ -6,7 +6,22 @@
     <p class="text-gray-500 mt-1">Welcome back, {{ currentUser?.username }}! Track your service requests here.</p>
   </div>
 
-  <div *ngIf="loading" class="text-center text-gray-500 py-12">Loading requests...</div>
+  <div *ngIf="loading" class="space-y-4">
+  <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
+    <div class="flex justify-between items-start mb-4">
+      <div>
+        <div class="h-5 bg-gray-200 rounded-full w-48 mb-2"></div>
+        <div class="h-4 bg-gray-200 rounded-full w-32 mb-2"></div>
+        <div class="h-3 bg-gray-200 rounded-full w-24"></div>
+      </div>
+      <div class="h-7 bg-gray-200 rounded-full w-20"></div>
+    </div>
+    <div class="bg-gray-50 rounded-xl p-4 mb-3">
+      <div class="h-4 bg-gray-200 rounded-full w-1/2 mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded-full w-1/3"></div>
+    </div>
+  </div>
+</div>
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load requests.</div>
 
   <div *ngIf="!loading && !error">
