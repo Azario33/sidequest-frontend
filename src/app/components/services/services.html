@@ -3,9 +3,11 @@
   <h1 class="text-4xl font-bold text-blue-700 mb-4">Find Skilled Tradespeople Near You</h1>
   <p class="text-gray-500 text-lg mb-8">Plumbers, electricians, carpenters and more — local and reliable.</p>
   <div class="max-w-xl mx-auto flex gap-2">
-    <input type="text" placeholder="What service are you looking for?"
+    <input [(ngModel)]="searchQuery" (ngModelChange)="onSearch()" type="text"
+      placeholder="Search by service, category or keyword..."
       class="flex-1 px-4 py-3 rounded-l-full border border-gray-300 focus:outline-none focus:border-blue-500" />
-    <button class="bg-blue-600 text-white px-6 py-3 rounded-r-full font-semibold hover:bg-blue-700 transition">
+    <button (click)="onSearch()"
+      class="bg-blue-600 text-white px-6 py-3 rounded-r-full font-semibold hover:bg-blue-700 transition">
       Search
     </button>
   </div>
@@ -13,18 +15,25 @@
 
 <!-- Services Section -->
 <div class="max-w-7xl mx-auto px-4 py-12">
-  <h2 class="text-2xl font-bold text-gray-800 mb-8">Available Services</h2>
+  <div class="flex justify-between items-center mb-8">
+    <h2 class="text-2xl font-bold text-gray-800">Available Services</h2>
+    <p *ngIf="searchQuery" class="text-gray-500 text-sm">
+      {{ filteredServices.length }} result(s) for "{{ searchQuery }}"
+    </p>
+  </div>
 
   <div *ngIf="loading" class="text-center text-gray-500 py-12">Loading services...</div>
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load services.</div>
 
   <div *ngIf="!loading && !error">
-    <div *ngIf="services.length === 0" class="text-center text-gray-400 py-12">
-      No services available yet.
+    <div *ngIf="filteredServices.length === 0" class="text-center text-gray-400 py-12">
+      <p class="text-4xl mb-4">🔍</p>
+      <p class="font-semibold text-lg">No services found for "{{ searchQuery }}"</p>
+      <p class="text-sm">Try a different keyword or category.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div *ngFor="let service of services"
+      <div *ngFor="let service of filteredServices"
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100">
         <div class="bg-blue-100 text-blue-600 text-sm font-semibold px-3 py-1 rounded-full inline-block mb-3">
           {{ service.category }}
