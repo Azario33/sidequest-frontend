@@ -15,10 +15,28 @@
 
 <!-- Services Section -->
 <div class="max-w-7xl mx-auto px-4 py-12">
+
+  <!-- Category Filters -->
+  <div *ngIf="categories.length > 0" class="mb-8">
+    <h3 class="text-sm font-semibold text-gray-500 mb-3">FILTER BY CATEGORY</h3>
+    <div class="flex flex-wrap gap-2">
+      <button (click)="selectCategory('')"
+        [class]="selectedCategory === '' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-blue-50'"
+        class="px-4 py-2 rounded-full text-sm font-medium transition">
+        All
+      </button>
+      <button *ngFor="let category of categories" (click)="selectCategory(category)"
+        [class]="selectedCategory === category ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-600 hover:bg-blue-50'"
+        class="px-4 py-2 rounded-full text-sm font-medium transition">
+        {{ category }}
+      </button>
+    </div>
+  </div>
+
   <div class="flex justify-between items-center mb-8">
     <h2 class="text-2xl font-bold text-gray-800">Available Services</h2>
-    <p *ngIf="searchQuery" class="text-gray-500 text-sm">
-      {{ filteredServices.length }} result(s) for "{{ searchQuery }}"
+    <p *ngIf="searchQuery || selectedCategory" class="text-gray-500 text-sm">
+      {{ filteredServices.length }} result(s) found
     </p>
   </div>
 
@@ -28,7 +46,7 @@
   <div *ngIf="!loading && !error">
     <div *ngIf="filteredServices.length === 0" class="text-center text-gray-400 py-12">
       <p class="text-4xl mb-4">🔍</p>
-      <p class="font-semibold text-lg">No services found for "{{ searchQuery }}"</p>
+      <p class="font-semibold text-lg">No services found</p>
       <p class="text-sm">Try a different keyword or category.</p>
     </div>
 

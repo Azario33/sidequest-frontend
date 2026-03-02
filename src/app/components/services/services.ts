@@ -13,6 +13,8 @@ import { ApiService } from '../../services/api';
 export class ServicesComponent implements OnInit {
   services: any[] = [];
   filteredServices: any[] = [];
+  categories: string[] = [];
+  selectedCategory = '';
   searchQuery = '';
   loading = true;
   error = false;
@@ -24,6 +26,7 @@ export class ServicesComponent implements OnInit {
       next: (data) => {
         this.services = data;
         this.filteredServices = data;
+        this.categories = Array.from(new Set(data.map((s: any) => s.category))) as string[];
         this.loading = false;
       },
       error: (err) => {
@@ -35,15 +38,30 @@ export class ServicesComponent implements OnInit {
   }
 
   onSearch() {
-    const query = this.searchQuery.toLowerCase().trim();
-    if (!query) {
-      this.filteredServices = this.services;
-      return;
+    this.applyFilters();
+  }
+
+  selectCategory(category: string) {
+    this.selectedCategory = this.selectedCategory === category ? '' : category;
+    this.applyFilters();
+  }
+
+  applyFilters() {
+    let results = this.services;
+
+    if (this.selectedCategory) {
+      results = results.filter(s => s.category === this.selectedCategory);
     }
-    this.filteredServices = this.services.filter(service =>
-      service.title.toLowerCase().includes(query) ||
-      service.description.toLowerCase().includes(query) ||
-      service.category.toLowerCase().includes(query)
-    );
+
+    if (this.searchQuery.trim()) {
+      const query = this.searchQuery.toLowerCase().trim();
+      results = results.filter(s =>
+        s.title.toLowerCase().includes(query) ||
+        s.description.toLowerCase().includes(query) ||
+        s.category.toLowerCase().includes(query)
+      );
+    }
+
+    this.filteredServices = results;
   }
 }

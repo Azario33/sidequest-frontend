@@ -26,6 +26,14 @@ export class ApiService {
     return this.http.get(`${this.baseUrl}/services/${id}/`);
   }
 
+  createService(data: any): Observable<any> {
+    return this.http.post(`${this.baseUrl}/services/create/`, data, { headers: this.getHeaders() });
+  }
+
+  deleteService(id: number): Observable<any> {
+    return this.http.delete(`${this.baseUrl}/services/${id}/`, { headers: this.getHeaders() });
+  }
+
   // Providers
   getProviders(): Observable<any> {
     return this.http.get(`${this.baseUrl}/providers/`);
@@ -46,8 +54,8 @@ export class ApiService {
   }
 
   createRequest(data: any): Observable<any> {
-  return this.http.post(`${this.baseUrl}/requests/create/`, data, { headers: this.getHeaders() });
-}
+    return this.http.post(`${this.baseUrl}/requests/create/`, data, { headers: this.getHeaders() });
+  }
 
   updateRequest(id: number, data: any): Observable<any> {
     return this.http.patch(`${this.baseUrl}/requests/${id}/`, data, { headers: this.getHeaders() });
