@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { AuthService } from '../../services/auth';
@@ -7,7 +8,7 @@ import { AuthService } from '../../services/auth';
 @Component({
   selector: 'app-service-detail',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './service-detail.html',
   styleUrl: './service-detail.css'
 })
@@ -18,6 +19,8 @@ export class ServiceDetailComponent implements OnInit {
   requestSent = false;
   requestLoading = false;
   isLoggedIn = false;
+  requestMessage = '';
+  errorMessage = '';
 
   constructor(
     private route: ActivatedRoute,
@@ -49,18 +52,18 @@ export class ServiceDetailComponent implements OnInit {
       return;
     }
     this.requestLoading = true;
-    const currentUser = this.authService.getCurrentUser();
+    this.errorMessage = '';
+
     this.apiService.createRequest({
-      customer: currentUser.id,
       service: this.service.id,
-      message: 'I would like to request this service.'
+      message: this.requestMessage
     }).subscribe({
       next: () => {
         this.requestSent = true;
         this.requestLoading = false;
       },
       error: (err) => {
-        console.error('Request failed', err);
+        this.errorMessage = err.error?.error || 'Request failed. Please try again.';
         this.requestLoading = false;
       }
     });

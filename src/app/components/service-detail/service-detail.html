@@ -1,10 +1,8 @@
 <div class="max-w-4xl mx-auto px-4 py-12">
-
   <div *ngIf="loading" class="text-center text-gray-500 py-12">Loading service...</div>
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load service.</div>
 
   <div *ngIf="!loading && !error && service">
-
     <!-- Back Button -->
     <a href="/services" class="text-blue-600 hover:underline text-sm mb-6 inline-block">← Back to Services</a>
 
@@ -43,8 +41,16 @@
         <p class="text-gray-500 text-sm mt-3">{{ service.provider?.bio || 'No bio provided.' }}</p>
       </div>
 
-      <!-- Request Button -->
-      <div *ngIf="!requestSent">
+      <!-- Error Message -->
+      <div *ngIf="errorMessage" class="bg-red-100 text-red-600 px-6 py-4 rounded-xl text-center font-semibold mb-4">
+        ⚠️ {{ errorMessage }}
+      </div>
+
+      <!-- Request Form -->
+      <div *ngIf="!requestSent && !errorMessage">
+        <textarea [(ngModel)]="requestMessage" placeholder="Add a message to the provider (optional)..."
+          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 mb-4 text-sm"
+          rows="3"></textarea>
         <button (click)="sendRequest()" [disabled]="requestLoading"
           class="w-full bg-blue-600 text-white py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50">
           {{ requestLoading ? 'Sending Request...' : isLoggedIn ? 'Request This Service' : 'Login to Request' }}

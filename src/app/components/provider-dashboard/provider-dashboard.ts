@@ -25,12 +25,10 @@ export class ProviderDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
-
     if (!this.currentUser || this.currentUser.role !== 'provider') {
       this.router.navigate(['/services']);
       return;
     }
-
     this.loadRequests();
   }
 
@@ -66,5 +64,9 @@ export class ProviderDashboardComponent implements OnInit {
 
   getAcceptedCount(): number {
     return this.requests.filter(r => r.status === 'accepted').length;
+  }
+
+  getCompletedCount(): number {
+    return this.requests.filter(r => r.status === 'completed').length;
   }
 }

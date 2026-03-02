@@ -25,12 +25,10 @@ export class CustomerDashboardComponent implements OnInit {
 
   ngOnInit() {
     this.currentUser = this.authService.getCurrentUser();
-
     if (!this.currentUser || this.currentUser.role !== 'customer') {
       this.router.navigate(['/services']);
       return;
     }
-
     this.loadRequests();
   }
 
@@ -58,5 +56,9 @@ export class CustomerDashboardComponent implements OnInit {
 
   getDeclinedCount(): number {
     return this.requests.filter(r => r.status === 'declined').length;
+  }
+
+  getCompletedCount(): number {
+    return this.requests.filter(r => r.status === 'completed').length;
   }
 }

@@ -12,20 +12,24 @@
   <div *ngIf="!loading && !error">
 
     <!-- Stats -->
-<div class="grid grid-cols-3 gap-4 mb-8">
-  <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
-    <p class="text-3xl font-bold text-blue-600">{{ requests.length }}</p>
-    <p class="text-gray-500 text-sm">Total Requests</p>
-  </div>
-  <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
-    <p class="text-3xl font-bold text-yellow-500">{{ getPendingCount() }}</p>
-    <p class="text-gray-500 text-sm">Pending</p>
-  </div>
-  <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
-    <p class="text-3xl font-bold text-green-600">{{ getAcceptedCount() }}</p>
-    <p class="text-gray-500 text-sm">Accepted</p>
-  </div>
-</div>
+    <div class="grid grid-cols-4 gap-4 mb-8">
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-blue-600">{{ requests.length }}</p>
+        <p class="text-gray-500 text-sm">Total</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-yellow-500">{{ getPendingCount() }}</p>
+        <p class="text-gray-500 text-sm">Pending</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-green-600">{{ getAcceptedCount() }}</p>
+        <p class="text-gray-500 text-sm">Accepted</p>
+      </div>
+      <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
+        <p class="text-3xl font-bold text-blue-400">{{ getCompletedCount() }}</p>
+        <p class="text-gray-500 text-sm">Completed</p>
+      </div>
+    </div>
 
     <!-- No Requests -->
     <div *ngIf="requests.length === 0" class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
@@ -50,6 +54,7 @@
           <span [class]="
             request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
             request.status === 'accepted' ? 'bg-green-100 text-green-700' :
+            request.status === 'completed' ? 'bg-blue-100 text-blue-700' :
             'bg-red-100 text-red-700'
             " class="px-3 py-1 rounded-full text-sm font-semibold">
             {{ request.status | titlecase }}
@@ -69,6 +74,13 @@
           <button (click)="updateStatus(request.id, 'declined')"
             class="bg-red-100 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-200 transition text-sm">
             ❌ Decline
+          </button>
+        </div>
+
+        <div *ngIf="request.status === 'accepted'" class="flex gap-3">
+          <button (click)="updateStatus(request.id, 'completed')"
+            class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">
+            🏁 Mark as Completed
           </button>
         </div>
 
