@@ -52,8 +52,22 @@
         </div>
         <div>
           <label class="block text-gray-700 font-medium mb-1 text-sm">Category</label>
-          <input [(ngModel)]="newService.category" type="text" placeholder="e.g. Plumbing"
-            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+          <select [(ngModel)]="newService.category"
+            class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm bg-white">
+            <option value="">Select a category</option>
+            <option value="Plumbing">Plumbing</option>
+            <option value="Electrical">Electrical</option>
+            <option value="Carpentry">Carpentry</option>
+            <option value="Painting">Painting</option>
+            <option value="Roofing">Roofing</option>
+            <option value="Landscaping">Landscaping</option>
+            <option value="Cleaning">Cleaning</option>
+            <option value="HVAC">HVAC</option>
+            <option value="Masonry">Masonry</option>
+            <option value="Moving">Moving</option>
+            <option value="Pest Control">Pest Control</option>
+            <option value="General Handyman">General Handyman</option>
+          </select>
         </div>
       </div>
 
@@ -112,22 +126,23 @@
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Incoming Requests</h2>
 
     <div *ngIf="loading" class="space-y-4">
-  <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
-    <div class="flex justify-between items-start mb-4">
-      <div>
-        <div class="h-5 bg-gray-200 rounded-full w-48 mb-2"></div>
-        <div class="h-4 bg-gray-200 rounded-full w-32 mb-2"></div>
-        <div class="h-3 bg-gray-200 rounded-full w-24"></div>
+      <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
+        <div class="flex justify-between items-start mb-4">
+          <div>
+            <div class="h-5 bg-gray-200 rounded-full w-48 mb-2"></div>
+            <div class="h-4 bg-gray-200 rounded-full w-32 mb-2"></div>
+            <div class="h-3 bg-gray-200 rounded-full w-24"></div>
+          </div>
+          <div class="h-7 bg-gray-200 rounded-full w-20"></div>
+        </div>
+        <div class="h-4 bg-gray-200 rounded-full w-full mb-4"></div>
+        <div class="flex gap-3">
+          <div class="h-9 bg-gray-200 rounded-full w-24"></div>
+          <div class="h-9 bg-gray-200 rounded-full w-24"></div>
+        </div>
       </div>
-      <div class="h-7 bg-gray-200 rounded-full w-20"></div>
     </div>
-    <div class="h-4 bg-gray-200 rounded-full w-full mb-4"></div>
-    <div class="flex gap-3">
-      <div class="h-9 bg-gray-200 rounded-full w-24"></div>
-      <div class="h-9 bg-gray-200 rounded-full w-24"></div>
-    </div>
-  </div>
-</div>
+
     <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load requests.</div>
 
     <div *ngIf="!loading && !error">
