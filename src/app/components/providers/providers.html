@@ -24,20 +24,21 @@
   </div>
 
   <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-  <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
-    <div class="flex items-center gap-4 mb-4">
-      <div class="bg-gray-200 rounded-full w-14 h-14"></div>
-      <div>
-        <div class="h-5 bg-gray-200 rounded-full w-32 mb-2"></div>
-        <div class="h-4 bg-gray-200 rounded-full w-20"></div>
+    <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
+      <div class="flex items-center gap-4 mb-4">
+        <div class="bg-gray-200 rounded-full w-14 h-14"></div>
+        <div>
+          <div class="h-5 bg-gray-200 rounded-full w-32 mb-2"></div>
+          <div class="h-4 bg-gray-200 rounded-full w-20"></div>
+        </div>
       </div>
+      <div class="h-4 bg-gray-200 rounded-full w-full mb-2"></div>
+      <div class="h-4 bg-gray-200 rounded-full w-2/3 mb-4"></div>
+      <div class="h-4 bg-gray-200 rounded-full w-1/2 mb-4"></div>
+      <div class="h-9 bg-gray-200 rounded-full w-full"></div>
     </div>
-    <div class="h-4 bg-gray-200 rounded-full w-full mb-2"></div>
-    <div class="h-4 bg-gray-200 rounded-full w-2/3 mb-4"></div>
-    <div class="h-4 bg-gray-200 rounded-full w-1/2 mb-4"></div>
-    <div class="h-9 bg-gray-200 rounded-full w-full"></div>
   </div>
-</div>
+
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load providers.</div>
 
   <div *ngIf="!loading && !error">
@@ -58,7 +59,10 @@
           </div>
           <div>
             <h3 class="text-lg font-bold text-gray-800">{{ provider.user?.username }}</h3>
-            <span class="text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-medium">
+            <span [class]="provider.is_available
+              ? 'bg-green-100 text-green-600'
+              : 'bg-red-100 text-red-600'"
+              class="text-xs px-2 py-1 rounded-full font-medium">
               {{ provider.is_available ? 'Available' : 'Unavailable' }}
             </span>
           </div>
@@ -75,10 +79,11 @@
           <span>{{ provider.service_area || 'Service area not specified' }}</span>
         </div>
 
-        <!-- View Profile Button -->
-        <button class="w-full bg-blue-600 text-white py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">
+        <!-- View Profile Button — links to the provider's profile page by ID -->
+        <a [href]="'/providers/' + provider.id"
+          class="block w-full bg-blue-600 text-white py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm text-center">
           View Profile
-        </button>
+        </a>
 
       </div>
     </div>

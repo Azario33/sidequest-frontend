@@ -34,11 +34,19 @@
             <p class="font-bold text-gray-800">{{ service.provider?.user?.username }}</p>
             <p class="text-sm text-gray-500">{{ service.provider?.service_area || 'Location not specified' }}</p>
           </div>
-          <span class="ml-auto text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-medium">
+          <span [class]="service.provider?.is_available
+            ? 'bg-green-100 text-green-600'
+            : 'bg-red-100 text-red-600'"
+            class="ml-auto text-xs px-2 py-1 rounded-full font-medium">
             {{ service.provider?.is_available ? 'Available' : 'Unavailable' }}
           </span>
         </div>
         <p class="text-gray-500 text-sm mt-3">{{ service.provider?.bio || 'No bio provided.' }}</p>
+      </div>
+
+      <!-- Previous Request Notice -->
+      <div *ngIf="previousRequest" class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-3 rounded-xl mb-4 text-sm">
+        📋 You previously requested this service. Your last message has been pre-filled below — feel free to edit it.
       </div>
 
       <!-- Error Message -->
@@ -48,7 +56,8 @@
 
       <!-- Request Form -->
       <div *ngIf="!requestSent && !errorMessage">
-        <textarea [(ngModel)]="requestMessage" placeholder="Add a message to the provider (optional)..."
+        <textarea [(ngModel)]="requestMessage"
+          [placeholder]="previousRequest ? 'Edit your message to the provider...' : 'Add a message to the provider (optional)...'"
           class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 mb-4 text-sm"
           rows="3"></textarea>
         <button (click)="sendRequest()" [disabled]="requestLoading"

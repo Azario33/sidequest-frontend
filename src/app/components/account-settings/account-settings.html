@@ -1,0 +1,63 @@
+<div class="max-w-2xl mx-auto px-4 py-12">
+
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-800">Account Settings</h1>
+    <p class="text-gray-500 mt-1">Manage your email and password, {{ currentUser?.username }}.</p>
+  </div>
+
+  <!-- Change Email -->
+  <div class="bg-white rounded-2xl shadow p-6 border border-gray-100 mb-6">
+    <h2 class="text-xl font-bold text-gray-800 mb-1">Email Address</h2>
+    <p class="text-sm text-gray-400 mb-4">Update the email associated with your account.</p>
+
+    <div *ngIf="emailError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
+      ⚠️ {{ emailError }}
+    </div>
+    <div *ngIf="emailSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
+      ✅ {{ emailSuccess }}
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-gray-700 font-medium mb-1 text-sm">New Email</label>
+      <input [(ngModel)]="emailForm.email" type="email" placeholder="you@example.com"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+    </div>
+
+    <button (click)="updateEmail()" [disabled]="emailLoading"
+      class="w-full bg-blue-600 text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+      {{ emailLoading ? 'Saving...' : 'Update Email' }}
+    </button>
+  </div>
+
+  <!-- Change Password -->
+  <div class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+    <h2 class="text-xl font-bold text-gray-800 mb-1">Password</h2>
+    <p class="text-sm text-gray-400 mb-4">Choose a strong password with at least 8 characters, one uppercase letter, one number and one symbol.</p>
+
+    <div *ngIf="passwordError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
+      ⚠️ {{ passwordError }}
+    </div>
+    <div *ngIf="passwordSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
+      ✅ {{ passwordSuccess }}
+    </div>
+
+    <div class="mb-4">
+      <label class="block text-gray-700 font-medium mb-1 text-sm">New Password</label>
+      <input [(ngModel)]="passwordForm.new_password" type="password" placeholder="Enter new password"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-gray-700 font-medium mb-1 text-sm">Confirm Password</label>
+      <input [(ngModel)]="passwordForm.confirm_password" type="password" placeholder="Confirm new password"
+        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+    </div>
+
+    <button (click)="updatePassword()" [disabled]="passwordLoading"
+      class="w-full bg-blue-600 text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+      {{ passwordLoading ? 'Saving...' : 'Update Password' }}
+    </button>
+  </div>
+
+</div>

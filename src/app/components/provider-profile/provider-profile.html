@@ -1,0 +1,82 @@
+<div class="max-w-4xl mx-auto px-4 py-12">
+
+  <div *ngIf="loading" class="text-center text-gray-500 py-12">Loading profile...</div>
+  <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load profile.</div>
+
+  <div *ngIf="!loading && !error && provider">
+
+    <!-- Back Button -->
+    <a href="/providers" class="text-blue-600 hover:underline text-sm mb-6 inline-block">← Back to Providers</a>
+
+    <!-- Profile Card -->
+    <div class="bg-white rounded-2xl shadow-lg p-8 border border-gray-100 mb-8">
+
+      <!-- Avatar + Name + Availability -->
+      <div class="flex items-center gap-6 mb-6">
+        <div class="bg-blue-100 text-blue-600 rounded-full w-20 h-20 flex items-center justify-center text-4xl font-bold">
+          {{ provider.user?.username?.charAt(0)?.toUpperCase() }}
+        </div>
+        <div>
+          <h1 class="text-3xl font-bold text-gray-800">{{ provider.user?.username }}</h1>
+          <span [class]="provider.is_available
+            ? 'bg-green-100 text-green-600'
+            : 'bg-red-100 text-red-600'"
+            class="text-xs px-3 py-1 rounded-full font-semibold mt-1 inline-block">
+            {{ provider.is_available ? '🟢 Available for work' : '🔴 Unavailable' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Bio -->
+      <div class="mb-4">
+        <h3 class="text-sm font-semibold text-gray-500 mb-1">ABOUT</h3>
+        <p class="text-gray-600">{{ provider.bio || 'This provider has not added a bio yet.' }}</p>
+      </div>
+
+      <!-- Service Area -->
+      <div *ngIf="provider.service_area">
+        <h3 class="text-sm font-semibold text-gray-500 mb-1">SERVICE AREA</h3>
+        <p class="text-gray-600">📍 {{ provider.service_area }}</p>
+      </div>
+
+    </div>
+
+    <!-- Services Section -->
+    <h2 class="text-2xl font-bold text-gray-800 mb-4">Services by {{ provider.user?.username }}</h2>
+
+    <!-- No services state -->
+    <div *ngIf="services.length === 0" class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
+      <p class="text-3xl mb-2">🛠️</p>
+      <p class="font-semibold">No services listed yet</p>
+      <p class="text-sm">This provider hasn't added any services.</p>
+    </div>
+
+    <!-- Services Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div *ngFor="let service of services"
+        class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 flex flex-col justify-between">
+
+        <div>
+          <div class="flex justify-between items-start mb-3">
+            <div class="bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full">
+              {{ service.category }}
+            </div>
+            <span class="text-xs text-gray-400">{{ service.created_at | date:'mediumDate' }}</span>
+          </div>
+          <h3 class="text-xl font-bold text-gray-800 mb-2">{{ service.title }}</h3>
+          <p class="text-gray-500 text-sm mb-4">{{ service.description }}</p>
+        </div>
+
+        <div class="flex justify-between items-center">
+          <span class="text-blue-600 font-bold text-xl">${{ service.price }}</span>
+          <a [href]="'/services/' + service.id"
+            class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition">
+            View Details
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>

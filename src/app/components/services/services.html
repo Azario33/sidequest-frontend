@@ -13,6 +13,17 @@
   </div>
 </div>
 
+<!-- Guest login nudge banner — only shown to users who are not logged in -->
+<div *ngIf="!isLoggedIn" class="bg-yellow-50 border-b border-yellow-100 px-4 py-3 text-center">
+  <p class="text-sm text-yellow-800">
+    👋 You're browsing as a guest.
+    <a href="/login" class="font-semibold text-blue-600 hover:underline">Log in</a>
+    or
+    <a href="/register" class="font-semibold text-blue-600 hover:underline">create an account</a>
+    to request services.
+  </p>
+</div>
+
 <!-- Services Section -->
 <div class="max-w-7xl mx-auto px-4 py-12">
 
@@ -57,12 +68,40 @@
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load services.</div>
 
   <div *ngIf="!loading && !error">
-    <div *ngIf="filteredServices.length === 0" class="text-center text-gray-400 py-12">
+
+    <!-- Empty state for search/filter with no results -->
+    <div *ngIf="filteredServices.length === 0 && (searchQuery || selectedCategory)"
+      class="text-center text-gray-400 py-12">
       <p class="text-4xl mb-4">🔍</p>
       <p class="font-semibold text-lg">No services found</p>
       <p class="text-sm">Try a different keyword or category.</p>
     </div>
 
+    <!-- Empty state for guests when no services exist at all -->
+    <div *ngIf="filteredServices.length === 0 && !searchQuery && !selectedCategory && !isLoggedIn"
+      class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
+      <p class="text-4xl mb-4">🛠️</p>
+      <p class="font-semibold text-lg text-gray-600">No services available yet</p>
+      <p class="text-sm mb-6">Be the first to offer a service on SideQuest!</p>
+      <div class="flex justify-center gap-3">
+        <a href="/login" class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">
+          Log In
+        </a>
+        <a href="/register" class="bg-yellow-300 text-blue-700 px-6 py-2 rounded-full font-semibold hover:bg-yellow-400 transition text-sm">
+          Create Account
+        </a>
+      </div>
+    </div>
+
+    <!-- Empty state for logged in users when no services exist -->
+    <div *ngIf="filteredServices.length === 0 && !searchQuery && !selectedCategory && isLoggedIn"
+      class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
+      <p class="text-4xl mb-4">🛠️</p>
+      <p class="font-semibold text-lg text-gray-600">No services available yet</p>
+      <p class="text-sm">Check back soon!</p>
+    </div>
+
+    <!-- Services Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div *ngFor="let service of filteredServices"
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 flex flex-col justify-between">
@@ -79,27 +118,39 @@
           <p class="text-gray-500 text-sm mb-4">{{ service.description }}</p>
         </div>
 
-        <!-- Provider Info -->
+        <!-- Provider Info — username links to provider's profile page -->
         <div class="flex items-center gap-3 mb-4 bg-gray-50 rounded-xl p-3">
           <div class="bg-blue-100 text-blue-600 rounded-full w-9 h-9 flex items-center justify-center text-sm font-bold">
             {{ service.provider?.user?.username?.charAt(0)?.toUpperCase() }}
           </div>
           <div>
-            <p class="text-sm font-semibold text-gray-700">{{ service.provider?.user?.username }}</p>
+            <a [href]="'/providers/' + service.provider?.id"
+              class="text-sm font-semibold text-blue-600 hover:underline">
+              {{ service.provider?.user?.username }}
+            </a>
             <p class="text-xs text-gray-400">{{ service.provider?.service_area || 'Location not specified' }}</p>
           </div>
-          <span class="ml-auto text-xs bg-green-100 text-green-600 px-2 py-1 rounded-full font-medium">
+          <span [class]="service.provider?.is_available
+            ? 'bg-green-100 text-green-600'
+            : 'bg-red-100 text-red-600'"
+            class="ml-auto text-xs px-2 py-1 rounded-full font-medium">
             {{ service.provider?.is_available ? 'Available' : 'Unavailable' }}
           </span>
         </div>
 
         <!-- Bottom Section -->
-        <div class="flex justify-between items-center">
-          <span class="text-blue-600 font-bold text-xl">${{ service.price }}</span>
-          <a [href]="'/services/' + service.id"
-            class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition">
-            View Details
-          </a>
+        <div>
+          <div class="flex justify-between items-center">
+            <span class="text-blue-600 font-bold text-xl">${{ service.price }}</span>
+            <a [href]="'/services/' + service.id"
+              class="bg-blue-600 text-white px-5 py-2 rounded-full text-sm font-semibold hover:bg-blue-700 transition">
+              View Details
+            </a>
+          </div>
+          <!-- Login nudge shown under each card for guests -->
+          <p *ngIf="!isLoggedIn" class="text-xs text-gray-400 text-right mt-2">
+            <a href="/login" class="text-blue-500 hover:underline">Log in</a> to request this service
+          </p>
         </div>
 
       </div>

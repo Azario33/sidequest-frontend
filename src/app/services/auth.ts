@@ -62,6 +62,19 @@ export class AuthService {
     return this.currentUserSubject.value;
   }
 
+  // Updates the stored user object after an email change
+  // Also updates the BehaviorSubject so any subscribed components reflect the change
+  updateStoredUser(user: any) {
+    localStorage.setItem('user', JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  // Updates the stored JWT token after a password change
+  // Keeps the user logged in without requiring them to log in again
+  updateStoredToken(token: string) {
+    localStorage.setItem('token', token);
+  }
+
   // Saves the token and user data to localStorage after login or registration
   // Also updates the BehaviorSubject so all subscribed components update
   private saveSession(res: any) {

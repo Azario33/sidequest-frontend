@@ -6,6 +6,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api';
+import { AuthService } from '../../services/auth';
 
 @Component({
   selector: 'app-services',
@@ -30,12 +31,20 @@ export class ServicesComponent implements OnInit {
   // Current value of the search input
   searchQuery = '';
 
+  // Whether the current user is logged in — used to show login nudges to guests
+  isLoggedIn = false;
+
   loading = true;
   error = false;
 
-  constructor(private apiService: ApiService) {}
+  constructor(
+    private apiService: ApiService,
+    private authService: AuthService
+  ) {}
 
   ngOnInit() {
+    this.isLoggedIn = this.authService.isLoggedIn();
+
     // Fetch all services when the component loads
     this.apiService.getServices().subscribe({
       next: (data) => {
