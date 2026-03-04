@@ -114,7 +114,20 @@
   <!-- My Services Section -->
   <div class="mb-12">
     <div class="flex justify-between items-center mb-4">
-      <h2 class="text-2xl font-bold text-gray-800">My Services</h2>
+      <div class="flex items-center gap-4">
+        <h2 class="text-2xl font-bold text-gray-800">My Services</h2>
+        <!-- Sort Dropdown -->
+        <div class="flex items-center gap-2">
+          <label class="text-sm text-gray-500 font-medium">Sort:</label>
+          <select [(ngModel)]="serviceSortOption" (ngModelChange)="onServiceSortChange()"
+            class="px-3 py-1.5 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+            <option value="price_asc">Price: Low to High</option>
+            <option value="price_desc">Price: High to Low</option>
+          </select>
+        </div>
+      </div>
       <button (click)="showAddService = !showAddService"
         class="bg-blue-600 text-white px-5 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">
         {{ showAddService ? '✕ Cancel' : '+ Add Service' }}
@@ -181,14 +194,14 @@
     </div>
 
     <!-- Services List -->
-    <div *ngIf="myServices.length === 0" class="text-center text-gray-400 py-8 bg-white rounded-2xl shadow">
+    <div *ngIf="sortedServices.length === 0" class="text-center text-gray-400 py-8 bg-white rounded-2xl shadow">
       <p class="text-3xl mb-2">🛠️</p>
       <p class="font-semibold">No services yet</p>
       <p class="text-sm">Click "Add Service" to create your first listing.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div *ngFor="let service of myServices"
+      <div *ngFor="let service of sortedServices"
         class="bg-white rounded-2xl shadow p-5 border border-gray-100">
 
         <!-- View Mode -->

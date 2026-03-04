@@ -34,9 +34,7 @@
             <p class="font-bold text-gray-800">{{ service.provider?.user?.username }}</p>
             <p class="text-sm text-gray-500">{{ service.provider?.service_area || 'Location not specified' }}</p>
           </div>
-          <span [class]="service.provider?.is_available
-            ? 'bg-green-100 text-green-600'
-            : 'bg-red-100 text-red-600'"
+          <span [class]="service.provider?.is_available ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
             class="ml-auto text-xs px-2 py-1 rounded-full font-medium">
             {{ service.provider?.is_available ? 'Available' : 'Unavailable' }}
           </span>
@@ -44,32 +42,47 @@
         <p class="text-gray-500 text-sm mt-3">{{ service.provider?.bio || 'No bio provided.' }}</p>
       </div>
 
-      <!-- Previous Request Notice -->
-      <div *ngIf="previousRequest" class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-3 rounded-xl mb-4 text-sm">
-        📋 You previously requested this service. Your last message has been pre-filled below — feel free to edit it.
+      <!-- Blocked: provider viewing their own service -->
+      <div *ngIf="isOwnService" class="bg-yellow-50 border border-yellow-100 text-yellow-700 px-6 py-4 rounded-xl text-center font-semibold">
+        🛠️ This is your own service listing.
       </div>
 
-      <!-- Error Message -->
-      <div *ngIf="errorMessage" class="bg-red-100 text-red-600 px-6 py-4 rounded-xl text-center font-semibold mb-4">
-        ⚠️ {{ errorMessage }}
+      <!-- Blocked: provider viewing someone else's service -->
+      <div *ngIf="isProvider && !isOwnService" class="bg-gray-50 border border-gray-200 text-gray-500 px-6 py-4 rounded-xl text-center">
+        👷 Provider accounts cannot request services.
       </div>
 
-      <!-- Request Form -->
-      <div *ngIf="!requestSent && !errorMessage">
-        <textarea [(ngModel)]="requestMessage"
-          [placeholder]="previousRequest ? 'Edit your message to the provider...' : 'Add a message to the provider (optional)...'"
-          class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 mb-4 text-sm"
-          rows="3"></textarea>
-        <button (click)="sendRequest()" [disabled]="requestLoading"
-          class="w-full bg-blue-600 text-white py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50">
-          {{ requestLoading ? 'Sending Request...' : isLoggedIn ? 'Request This Service' : 'Login to Request' }}
-        </button>
-        <p *ngIf="!isLoggedIn" class="text-center text-gray-400 text-sm mt-2">You need to be logged in to request a service.</p>
-      </div>
+      <!-- Customer request flow -->
+      <div *ngIf="!isProvider">
 
-      <!-- Success Message -->
-      <div *ngIf="requestSent" class="bg-green-100 text-green-700 px-6 py-4 rounded-xl text-center font-semibold">
-        ✅ Request sent successfully! The provider will be in touch soon.
+        <!-- Previous Request Notice -->
+        <div *ngIf="previousRequest" class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-3 rounded-xl mb-4 text-sm">
+          📋 You previously requested this service. Your last message has been pre-filled below — feel free to edit it.
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="errorMessage" class="bg-red-100 text-red-600 px-6 py-4 rounded-xl text-center font-semibold mb-4">
+          ⚠️ {{ errorMessage }}
+        </div>
+
+        <!-- Request Form -->
+        <div *ngIf="!requestSent && !errorMessage">
+          <textarea [(ngModel)]="requestMessage"
+            [placeholder]="previousRequest ? 'Edit your message to the provider...' : 'Add a message to the provider (optional)...'"
+            class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:border-blue-500 mb-4 text-sm"
+            rows="3"></textarea>
+          <button (click)="sendRequest()" [disabled]="requestLoading"
+            class="w-full bg-blue-600 text-white py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50">
+            {{ requestLoading ? 'Sending Request...' : isLoggedIn ? 'Request This Service' : 'Login to Request' }}
+          </button>
+          <p *ngIf="!isLoggedIn" class="text-center text-gray-400 text-sm mt-2">You need to be logged in to request a service.</p>
+        </div>
+
+        <!-- Success Message -->
+        <div *ngIf="requestSent" class="bg-green-100 text-green-700 px-6 py-4 rounded-xl text-center font-semibold">
+          ✅ Request sent successfully! The provider will be in touch soon.
+        </div>
+
       </div>
 
     </div>

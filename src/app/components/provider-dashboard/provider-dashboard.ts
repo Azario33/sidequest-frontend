@@ -16,10 +16,14 @@ import { AuthService } from '../../services/auth';
 export class ProviderDashboardComponent implements OnInit {
   requests: any[] = [];
   myServices: any[] = [];
+  sortedServices: any[] = [];
 
   loading = true;
   error = false;
   currentUser: any = null;
+
+  // Currently selected sort option for My Services
+  serviceSortOption = 'newest';
 
   showAddService = false;
   serviceLoading = false;
@@ -135,9 +139,36 @@ export class ProviderDashboardComponent implements OnInit {
     this.apiService.getServices().subscribe({
       next: (data) => {
         this.myServices = data.filter((s: any) => s.provider?.user?.username === this.currentUser.username);
+        this.applyServiceSort();
       },
       error: (err) => console.error('Error fetching services', err)
     });
+  }
+
+  // Called when the sort dropdown changes
+  onServiceSortChange() {
+    this.applyServiceSort();
+  }
+
+  // Sorts myServices into sortedServices based on the selected option
+  applyServiceSort() {
+    let results = [...this.myServices];
+    switch (this.serviceSortOption) {
+      case 'price_asc':
+        results.sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+        break;
+      case 'price_desc':
+        results.sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+        break;
+      case 'oldest':
+        results.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case 'newest':
+      default:
+        results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+    }
+    this.sortedServices = results;
   }
 
   addService() {
@@ -203,6 +234,7 @@ export class ProviderDashboardComponent implements OnInit {
         this.editingServiceId = null;
         this.editServiceLoading = false;
         this.serviceSuccess = 'Service updated successfully!';
+        this.applyServiceSort();
         setTimeout(() => this.serviceSuccess = '', 3000);
       },
       error: () => {
@@ -217,6 +249,7 @@ export class ProviderDashboardComponent implements OnInit {
     this.apiService.deleteService(id).subscribe({
       next: () => {
         this.myServices = this.myServices.filter(s => s.id !== id);
+        this.applyServiceSort();
       },
       error: (err) => console.error('Error deleting service', err)
     });

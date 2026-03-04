@@ -17,10 +17,21 @@
 <div class="max-w-7xl mx-auto px-4 py-12">
 
   <div class="flex justify-between items-center mb-8">
-    <h2 class="text-2xl font-bold text-gray-800">Available Providers</h2>
-    <p *ngIf="searchQuery" class="text-gray-500 text-sm">
-      {{ filteredProviders.length }} result(s) for "{{ searchQuery }}"
-    </p>
+    <div class="flex items-center gap-4">
+      <h2 class="text-2xl font-bold text-gray-800">Available Providers</h2>
+      <p *ngIf="searchQuery" class="text-gray-500 text-sm">
+        {{ filteredProviders.length }} result(s) for "{{ searchQuery }}"
+      </p>
+    </div>
+    <div class="flex items-center gap-2">
+      <label class="text-sm text-gray-500 font-medium">Sort by:</label>
+      <select [(ngModel)]="sortOption" (ngModelChange)="onSortChange()"
+        class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+        <option value="available">Available First</option>
+        <option value="az">A → Z</option>
+        <option value="za">Z → A</option>
+      </select>
+    </div>
   </div>
 
   <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -52,34 +63,26 @@
       <div *ngFor="let provider of filteredProviders"
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100">
 
-        <!-- Avatar -->
         <div class="flex items-center gap-4 mb-4">
           <div class="bg-blue-100 text-blue-600 rounded-full w-14 h-14 flex items-center justify-center text-2xl font-bold">
             {{ provider.user?.username?.charAt(0)?.toUpperCase() }}
           </div>
           <div>
             <h3 class="text-lg font-bold text-gray-800">{{ provider.user?.username }}</h3>
-            <span [class]="provider.is_available
-              ? 'bg-green-100 text-green-600'
-              : 'bg-red-100 text-red-600'"
+            <span [class]="provider.is_available ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
               class="text-xs px-2 py-1 rounded-full font-medium">
               {{ provider.is_available ? 'Available' : 'Unavailable' }}
             </span>
           </div>
         </div>
 
-        <!-- Bio -->
-        <p class="text-gray-500 text-sm mb-4">
-          {{ provider.bio || 'No bio provided yet.' }}
-        </p>
+        <p class="text-gray-500 text-sm mb-4">{{ provider.bio || 'No bio provided yet.' }}</p>
 
-        <!-- Service Area -->
         <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
           <span>📍</span>
           <span>{{ provider.service_area || 'Service area not specified' }}</span>
         </div>
 
-        <!-- View Profile Button — links to the provider's profile page by ID -->
         <a [href]="'/providers/' + provider.id"
           class="block w-full bg-blue-600 text-white py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm text-center">
           View Profile

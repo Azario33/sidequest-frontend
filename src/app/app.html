@@ -8,21 +8,30 @@
       <a href="/about" class="text-white hover:text-yellow-300 font-medium transition">About</a>
       <a href="/providers" class="text-white hover:text-yellow-300 font-medium transition">Providers</a>
 
-      <!-- Show login/register buttons when not logged in -->
       <ng-container *ngIf="!isLoggedIn">
         <a href="/login" class="bg-white text-blue-600 px-4 py-1 rounded-full font-semibold hover:bg-yellow-300 transition">Login</a>
         <a href="/register" class="bg-yellow-300 text-blue-700 px-4 py-1 rounded-full font-semibold hover:bg-yellow-400 transition">Register</a>
       </ng-container>
 
-      <!-- Show dashboard, settings and logout when logged in -->
       <ng-container *ngIf="isLoggedIn">
         <a *ngIf="currentUser?.role === 'provider'" href="/provider-dashboard"
           class="text-white hover:text-yellow-300 font-medium transition">Dashboard</a>
         <a *ngIf="currentUser?.role === 'customer'" href="/customer-dashboard"
           class="text-white hover:text-yellow-300 font-medium transition">My Requests</a>
-        <a href="/account-settings"
-          class="text-white hover:text-yellow-300 font-medium transition">Settings</a>
-        <span class="text-white font-medium">👋 {{ currentUser?.username }}</span>
+        <a href="/account-settings" class="text-white hover:text-yellow-300 font-medium transition">Settings</a>
+
+        <!-- Bell sits next to the username -->
+        <div class="flex items-center gap-3">
+          <span class="text-white font-medium">👋 {{ currentUser?.username }}</span>
+          <a href="/notifications" class="relative text-white hover:text-yellow-300 transition" title="Notifications">
+            <span class="text-xl">🔔</span>
+            <span *ngIf="unreadCount > 0"
+              class="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+              {{ unreadCount > 99 ? '99+' : unreadCount }}
+            </span>
+          </a>
+        </div>
+
         <span class="bg-yellow-300 text-blue-700 px-3 py-1 rounded-full text-sm font-semibold">{{ currentUser?.role | titlecase }}</span>
         <button (click)="logout()" class="bg-white text-blue-600 px-4 py-1 rounded-full font-semibold hover:bg-red-100 transition">Logout</button>
       </ng-container>

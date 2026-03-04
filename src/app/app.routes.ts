@@ -9,6 +9,8 @@ import { ProviderDashboardComponent } from './components/provider-dashboard/prov
 import { CustomerDashboardComponent } from './components/customer-dashboard/customer-dashboard';
 import { AccountSettingsComponent } from './components/account-settings/account-settings';
 import { ProviderProfileComponent } from './components/provider-profile/provider-profile';
+import { NotificationsComponent } from './components/notifications/notifications';
+import { NotFoundComponent } from './components/not-found/not-found';
 
 export const routes: Routes = [
   { path: '', redirectTo: 'services', pathMatch: 'full' },
@@ -22,4 +24,7 @@ export const routes: Routes = [
   { path: 'provider-dashboard', component: ProviderDashboardComponent },
   { path: 'customer-dashboard', component: CustomerDashboardComponent },
   { path: 'account-settings', component: AccountSettingsComponent },
+  { path: 'notifications', component: NotificationsComponent },
+  // Catch-all — must always be last
+  { path: '**', component: NotFoundComponent },
 ];

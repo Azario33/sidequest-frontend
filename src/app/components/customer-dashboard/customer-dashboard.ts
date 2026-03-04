@@ -4,6 +4,7 @@
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { ApiService } from '../../services/api';
 import { AuthService } from '../../services/auth';
@@ -11,13 +12,19 @@ import { AuthService } from '../../services/auth';
 @Component({
   selector: 'app-customer-dashboard',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './customer-dashboard.html',
   styleUrl: './customer-dashboard.css'
 })
 export class CustomerDashboardComponent implements OnInit {
   // All requests made by this customer
   requests: any[] = [];
+
+  // Sorted list shown in the template
+  sortedRequests: any[] = [];
+
+  // Currently selected sort option
+  sortOption = 'newest';
 
   loading = true;
   error = false;
@@ -41,12 +48,11 @@ export class CustomerDashboardComponent implements OnInit {
     this.loadRequests();
   }
 
-  // Fetches all requests from the API and filters to only show this customer's requests
   loadRequests() {
     this.apiService.getRequests().subscribe({
       next: (data) => {
-        // Extra client side filter to make sure only this customer's requests are shown
         this.requests = data.filter((r: any) => r.customer?.id === this.currentUser.id);
+        this.applySort();
         this.loading = false;
       },
       error: (err) => {
@@ -57,15 +63,37 @@ export class CustomerDashboardComponent implements OnInit {
     });
   }
 
+  onSortChange() {
+    this.applySort();
+  }
+
+  applySort() {
+    let results = [...this.requests];
+    switch (this.sortOption) {
+      case 'newest':
+        results.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+        break;
+      case 'oldest':
+        results.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+        break;
+      case 'status':
+        // Order: pending → accepted → completed → declined
+        const order: any = { pending: 0, accepted: 1, completed: 2, declined: 3 };
+        results.sort((a, b) => (order[a.status] ?? 9) - (order[b.status] ?? 9));
+        break;
+    }
+    this.sortedRequests = results;
+  }
+
   // Cancels a pending request after confirming with the user
   cancelRequest(requestId: number) {
     if (!confirm('Are you sure you want to cancel this request?')) return;
 
     this.apiService.cancelRequest(requestId).subscribe({
       next: (updated) => {
-        // Update the request status locally so the UI reflects the change immediately
         const req = this.requests.find(r => r.id === requestId);
         if (req) req.status = updated.status;
+        this.applySort();
       },
       error: (err) => {
         console.error('Error cancelling request', err);
@@ -73,7 +101,6 @@ export class CustomerDashboardComponent implements OnInit {
     });
   }
 
-  // Helper methods for the stats section at the top of the dashboard
   getPendingCount(): number {
     return this.requests.filter(r => r.status === 'pending').length;
   }

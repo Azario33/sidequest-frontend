@@ -58,9 +58,23 @@
       </a>
     </div>
 
+    <!-- Sort Toolbar -->
+    <div *ngIf="requests.length > 0" class="flex justify-between items-center mb-4">
+      <p class="text-sm text-gray-500">{{ requests.length }} request(s) total</p>
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-500 font-medium">Sort by:</label>
+        <select [(ngModel)]="sortOption" (ngModelChange)="onSortChange()"
+          class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="status">By Status</option>
+        </select>
+      </div>
+    </div>
+
     <!-- Requests List -->
     <div class="space-y-4">
-      <div *ngFor="let request of requests"
+      <div *ngFor="let request of sortedRequests"
         class="bg-white rounded-2xl shadow p-6 border border-gray-100">
 
         <div class="flex justify-between items-start mb-4">
@@ -69,8 +83,6 @@
             <p class="text-gray-500 text-sm">Provider: <span class="font-medium text-blue-600">{{ request.service?.provider?.user?.username }}</span></p>
             <p class="text-gray-400 text-xs mt-1">{{ request.created_at | date:'medium' }}</p>
           </div>
-
-          <!-- Status Badge -->
           <span [class]="
             request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
             request.status === 'accepted' ? 'bg-green-100 text-green-700' :

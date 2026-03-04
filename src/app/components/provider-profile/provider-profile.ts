@@ -1,6 +1,6 @@
 // provider-profile.ts
 // This component shows a provider's full public profile
-// It displays their bio, service area, availability and all their active services
+// It displays their bio, service area, availability and all their active services sorted newest first
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -39,11 +39,12 @@ export class ProviderProfileComponent implements OnInit {
           this.provider = data;
 
           // After loading the profile, fetch all services and filter to this provider's
+          // Then sort newest first so the most recent listings appear at the top
           this.apiService.getServices().subscribe({
             next: (allServices) => {
-              this.services = allServices.filter(
-                (s: any) => s.provider?.user?.username === data.user?.username
-              );
+              this.services = allServices
+                .filter((s: any) => s.provider?.user?.username === data.user?.username)
+                .sort((a: any, b: any) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
               this.loading = false;
             },
             error: () => {

@@ -1,6 +1,6 @@
 // services.ts
 // This component handles the main services listing page
-// It fetches all services from the API and supports search and category filtering
+// It fetches all services from the API and supports search, category filtering and sorting
 
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -19,7 +19,7 @@ export class ServicesComponent implements OnInit {
   // Full list of services fetched from the API
   services: any[] = [];
 
-  // Filtered list shown to the user based on search and category
+  // Filtered and sorted list shown to the user
   filteredServices: any[] = [];
 
   // List of unique categories extracted from the services data
@@ -30,6 +30,9 @@ export class ServicesComponent implements OnInit {
 
   // Current value of the search input
   searchQuery = '';
+
+  // Currently selected sort option
+  sortOption = 'newest';
 
   // Whether the current user is logged in — used to show login nudges to guests
   isLoggedIn = false;
@@ -54,6 +57,7 @@ export class ServicesComponent implements OnInit {
         // Extract unique categories from the services for the filter buttons
         this.categories = Array.from(new Set(data.map((s: any) => s.category))) as string[];
         this.loading = false;
+        this.applyFilters();
       },
       error: (err) => {
         console.error('Error fetching services', err);
@@ -68,13 +72,18 @@ export class ServicesComponent implements OnInit {
     this.applyFilters();
   }
 
+  // Called when the sort option changes
+  onSortChange() {
+    this.applyFilters();
+  }
+
   // Toggles the selected category - clicking the same category again deselects it
   selectCategory(category: string) {
     this.selectedCategory = this.selectedCategory === category ? '' : category;
     this.applyFilters();
   }
 
-  // Applies both the category filter and search query to the full services list
+  // Applies search, category filter and sort to the full services list
   applyFilters() {
     let results = this.services;
 
@@ -93,6 +102,24 @@ export class ServicesComponent implements OnInit {
       );
     }
 
+    // Apply the selected sort option
+    results = this.applySorting(results);
+
     this.filteredServices = results;
+  }
+
+  // Sorts the results array based on the currently selected sort option
+  applySorting(results: any[]): any[] {
+    switch (this.sortOption) {
+      case 'price_asc':
+        return [...results].sort((a, b) => parseFloat(a.price) - parseFloat(b.price));
+      case 'price_desc':
+        return [...results].sort((a, b) => parseFloat(b.price) - parseFloat(a.price));
+      case 'oldest':
+        return [...results].sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case 'newest':
+      default:
+        return [...results].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+    }
   }
 }

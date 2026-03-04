@@ -23,11 +23,12 @@ export class ServiceDetailComponent implements OnInit {
   requestSent = false;
   requestLoading = false;
   isLoggedIn = false;
+  isProvider = false;
+  isOwnService = false;
   requestMessage = '';
   errorMessage = '';
 
   // Stores the customer's previous request for this service if one exists
-  // Used to pre-fill the message when re-requesting after a decline or completion
   previousRequest: any = null;
 
   constructor(
@@ -39,18 +40,28 @@ export class ServiceDetailComponent implements OnInit {
 
   ngOnInit() {
     this.isLoggedIn = this.authService.isLoggedIn();
+    const currentUser = this.authService.getCurrentUser();
+
+    // Check if the logged in user is a provider
+    if (currentUser?.role === 'provider') {
+      this.isProvider = true;
+    }
+
     const id = this.route.snapshot.paramMap.get('id');
 
     if (id) {
-      // Load the service details first
       this.apiService.getService(+id).subscribe({
         next: (data) => {
           this.service = data;
           this.loading = false;
 
-          // If the user is logged in, check for a previous request for this service
-          // This lets us pre-fill the message on re-request
-          if (this.isLoggedIn) {
+          // Check if the logged in provider owns this service
+          if (this.isProvider && currentUser?.username === data.provider?.user?.username) {
+            this.isOwnService = true;
+          }
+
+          // If the user is a customer, check for a previous request for this service
+          if (this.isLoggedIn && !this.isProvider) {
             this.loadPreviousRequest(+id);
           }
         },
@@ -63,11 +74,9 @@ export class ServiceDetailComponent implements OnInit {
   }
 
   // Fetches the customer's requests and looks for a previous one for this service
-  // If found and it was declined or completed, pre-fill the message textarea
   loadPreviousRequest(serviceId: number) {
     this.apiService.getRequests().subscribe({
       next: (requests: any[]) => {
-        // Find a previous request for this specific service that is no longer active
         const prev = requests.find(
           (r: any) => r.service?.id === serviceId &&
           (r.status === 'declined' || r.status === 'completed')
@@ -75,12 +84,10 @@ export class ServiceDetailComponent implements OnInit {
 
         if (prev) {
           this.previousRequest = prev;
-          // Pre-fill the message with what the customer sent last time
           this.requestMessage = prev.message || '';
         }
       },
       error: () => {
-        // Silently fail - pre-filling is a nice-to-have, not critical
         console.error('Could not load previous requests');
       }
     });
