@@ -68,6 +68,11 @@ export class ApiService {
     return this.http.patch(`${this.baseUrl}/providers/profile/update/`, data, { headers: this.getHeaders() });
   }
 
+  // Updates the provider's map location (latitude, longitude and service_area)
+  updateProviderLocation(data: { latitude: number, longitude: number, service_area: string }): Observable<any> {
+    return this.http.patch(`${this.baseUrl}/providers/profile/update/`, data, { headers: this.getHeaders() });
+  }
+
   // --- User Methods ---
 
   // Fetches all users (used for admin purposes)

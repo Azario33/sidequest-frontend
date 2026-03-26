@@ -6,7 +6,7 @@
     <p class="text-gray-500 mt-1">Welcome back, {{ currentUser?.username }}! Manage your services and requests.</p>
   </div>
 
-  <!-- Stats -->
+  <!-- Stats — shows a quick summary of request counts at the top -->
   <div class="grid grid-cols-4 gap-4 mb-8">
     <div class="bg-white rounded-2xl shadow p-4 text-center border border-gray-100">
       <p class="text-3xl font-bold text-blue-600">{{ requests.length }}</p>
@@ -39,12 +39,10 @@
       </button>
     </div>
 
-    <!-- Availability badge shown when form is collapsed -->
+    <!-- Collapsed view — shows current bio, service area and availability status -->
     <div *ngIf="!showEditProfile" class="bg-white rounded-2xl shadow p-5 border border-gray-100">
       <div class="flex items-center gap-3 mb-3">
-        <span [class]="profileForm.is_available
-          ? 'bg-green-100 text-green-700'
-          : 'bg-red-100 text-red-600'"
+        <span [class]="profileForm.is_available ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-600'"
           class="px-3 py-1 rounded-full text-sm font-semibold">
           {{ profileForm.is_available ? '🟢 Available for work' : '🔴 Unavailable' }}
         </span>
@@ -53,48 +51,34 @@
       <p *ngIf="profileForm.service_area" class="text-gray-400 text-xs mt-2">📍 {{ profileForm.service_area }}</p>
     </div>
 
-    <!-- Edit Profile Form -->
+    <!-- Edit Profile Form — expanded when the provider clicks Edit Profile -->
     <div *ngIf="showEditProfile" class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+      <div *ngIf="profileError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">⚠️ {{ profileError }}</div>
 
-      <div *ngIf="profileError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
-        ⚠️ {{ profileError }}
-      </div>
-
-      <!-- Bio -->
+      <!-- Bio field -->
       <div class="mb-4">
         <label class="block text-gray-700 font-medium mb-1 text-sm">Bio</label>
-        <textarea [(ngModel)]="profileForm.bio"
-          placeholder="Tell customers a bit about yourself and your experience..."
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-          rows="3"></textarea>
+        <textarea [(ngModel)]="profileForm.bio" placeholder="Tell customers a bit about yourself and your experience..."
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" rows="3"></textarea>
       </div>
 
-      <!-- Service Area -->
+      <!-- Service area text field — also auto-updated when location is saved via the map -->
       <div class="mb-4">
         <label class="block text-gray-700 font-medium mb-1 text-sm">Service Area</label>
-        <input [(ngModel)]="profileForm.service_area" type="text"
-          placeholder="e.g. Downtown Toronto, North York..."
+        <input [(ngModel)]="profileForm.service_area" type="text" placeholder="e.g. Downtown Halifax, NS..."
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
       </div>
 
-      <!-- Availability Toggle -->
+      <!-- Availability toggle buttons -->
       <div class="mb-6">
         <label class="block text-gray-700 font-medium mb-2 text-sm">Availability</label>
         <div class="flex items-center gap-3">
           <button (click)="profileForm.is_available = true"
-            [class]="profileForm.is_available
-              ? 'bg-green-600 text-white'
-              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
-            class="px-5 py-2 rounded-full font-semibold text-sm transition">
-            🟢 Available
-          </button>
+            [class]="profileForm.is_available ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+            class="px-5 py-2 rounded-full font-semibold text-sm transition">🟢 Available</button>
           <button (click)="profileForm.is_available = false"
-            [class]="!profileForm.is_available
-              ? 'bg-red-500 text-white'
-              : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
-            class="px-5 py-2 rounded-full font-semibold text-sm transition">
-            🔴 Unavailable
-          </button>
+            [class]="!profileForm.is_available ? 'bg-red-500 text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'"
+            class="px-5 py-2 rounded-full font-semibold text-sm transition">🔴 Unavailable</button>
         </div>
       </div>
 
@@ -104,19 +88,137 @@
       </button>
     </div>
 
-    <!-- Success message after saving -->
-    <div *ngIf="profileSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mt-3 text-sm">
-      ✅ {{ profileSuccess }}
-    </div>
+    <!-- Success message shown after profile is saved -->
+    <div *ngIf="profileSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mt-3 text-sm">✅ {{ profileSuccess }}</div>
   </div>
   <!-- ===== END MY PROFILE SECTION ===== -->
 
-  <!-- My Services Section -->
+  <!-- ===== MY LOCATION SECTION ===== -->
+  <!-- Providers set their map location here so customers can see how close they are -->
+  <div class="mb-12">
+    <div class="flex justify-between items-center mb-4">
+      <div>
+        <h2 class="text-2xl font-bold text-gray-800">My Location</h2>
+        <p class="text-sm text-gray-400 mt-0.5">Set your location so customers can find providers near them</p>
+      </div>
+      <button (click)="showLocationMap = !showLocationMap"
+        class="bg-gray-100 text-gray-700 px-5 py-2 rounded-full font-semibold hover:bg-gray-200 transition text-sm">
+        {{ showLocationMap ? '✕ Close Map' : '📍 Set Location' }}
+      </button>
+    </div>
+
+    <!-- Collapsed view — shows the currently saved location summary -->
+    <div *ngIf="!showLocationMap" class="bg-white rounded-2xl shadow p-5 border border-gray-100">
+      <div *ngIf="savedLatitude && savedLongitude">
+        <p class="text-sm font-semibold text-gray-700 mb-1">📍 Location set</p>
+        <p class="text-gray-600 text-sm">{{ profileForm.service_area }}</p>
+        <p class="text-gray-400 text-xs mt-1">{{ savedLatitude.toFixed(5) }}, {{ savedLongitude.toFixed(5) }}</p>
+      </div>
+      <div *ngIf="!savedLatitude || !savedLongitude">
+        <p class="text-gray-400 text-sm">No location set yet. Click "Set Location" to get started.</p>
+      </div>
+    </div>
+
+    <!-- Expanded location panel — shows address search fields and the interactive map -->
+    <div *ngIf="showLocationMap" class="bg-white rounded-2xl shadow p-6 border border-gray-100">
+
+      <!-- Address Search Fields -->
+      <!-- Provider can type their address instead of clicking the map -->
+      <div class="mb-6">
+        <h3 class="text-sm font-semibold text-gray-700 mb-3">🔍 Search by Address</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+          <div>
+            <label class="block text-gray-600 text-xs font-medium mb-1">Street Address</label>
+            <input [(ngModel)]="addressSearch.street" type="text" placeholder="e.g. 123 Main St"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+          </div>
+          <div>
+            <label class="block text-gray-600 text-xs font-medium mb-1">City</label>
+            <input [(ngModel)]="addressSearch.city" type="text" placeholder="e.g. Halifax"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+          </div>
+          <div>
+            <label class="block text-gray-600 text-xs font-medium mb-1">Province / State</label>
+            <input [(ngModel)]="addressSearch.province" type="text" placeholder="e.g. Nova Scotia"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+          </div>
+          <div>
+            <label class="block text-gray-600 text-xs font-medium mb-1">Postal Code</label>
+            <input [(ngModel)]="addressSearch.postal" type="text" placeholder="e.g. B3H 1A1"
+              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
+          </div>
+        </div>
+
+        <!-- Error shown if the typed address cannot be geocoded -->
+        <div *ngIf="addressSearchError" class="bg-red-50 text-red-600 px-3 py-2 rounded-lg mb-3 text-sm">
+          ⚠️ {{ addressSearchError }}
+        </div>
+
+        <!-- Find on Map button — geocodes the typed address and drops a pin -->
+        <button (click)="searchAddress()" [disabled]="addressSearchLoading"
+          class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm disabled:opacity-50">
+          {{ addressSearchLoading ? 'Searching...' : '🔍 Find on Map' }}
+        </button>
+      </div>
+
+      <!-- Divider between address search and map click sections -->
+      <div class="border-t border-gray-100 mb-6"></div>
+
+      <!-- Map click instruction -->
+      <p class="text-sm text-gray-500 mb-3">
+        📌 Or click directly on the map to drop your pin at any location.
+      </p>
+
+      <!-- Shows the resolved address of the current pin position -->
+      <div *ngIf="resolvedAddress" class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-2 rounded-lg mb-3 text-sm">
+        📍 Pin location: <strong>{{ resolvedAddress }}</strong>
+      </div>
+
+      <!-- Google Maps component -->
+      <!-- Provider clicks on the map to set a pin or uses the address search above -->
+      <google-map
+        [center]="mapCenter"
+        [zoom]="mapZoom"
+        [options]="mapOptions"
+        width="100%"
+        height="420px"
+        (mapClick)="onMapClick($event)">
+
+        <!-- The draggable pin shown at the provider's selected location -->
+        <map-marker
+          *ngIf="markerPosition"
+          [position]="markerPosition"
+          [title]="resolvedAddress || 'Your location'">
+        </map-marker>
+
+      </google-map>
+
+      <!-- Success message shown after location is saved successfully -->
+      <div *ngIf="locationSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mt-4 text-sm">
+        {{ locationSuccess }}
+      </div>
+
+      <!-- Error message shown if save fails -->
+      <div *ngIf="locationError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mt-4 text-sm">
+        ⚠️ {{ locationError }}
+      </div>
+
+      <!-- Save Location button — disabled until a pin has been dropped -->
+      <button (click)="saveLocation()" [disabled]="locationLoading || !markerPosition"
+        class="w-full mt-4 bg-blue-600 text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition disabled:opacity-50">
+        {{ locationLoading ? 'Saving...' : '💾 Save Location' }}
+      </button>
+
+    </div>
+  </div>
+  <!-- ===== END MY LOCATION SECTION ===== -->
+
+  <!-- ===== MY SERVICES SECTION ===== -->
   <div class="mb-12">
     <div class="flex justify-between items-center mb-4">
       <div class="flex items-center gap-4">
         <h2 class="text-2xl font-bold text-gray-800">My Services</h2>
-        <!-- Sort Dropdown -->
+        <!-- Sort dropdown for the provider's own service listings -->
         <div class="flex items-center gap-2">
           <label class="text-sm text-gray-500 font-medium">Sort:</label>
           <select [(ngModel)]="serviceSortOption" (ngModelChange)="onServiceSortChange()"
@@ -134,14 +236,10 @@
       </button>
     </div>
 
-    <!-- Add Service Form -->
+    <!-- Add New Service Form -->
     <div *ngIf="showAddService" class="bg-white rounded-2xl shadow p-6 border border-gray-100 mb-6">
       <h3 class="text-lg font-bold text-gray-800 mb-4">Add New Service</h3>
-
-      <div *ngIf="serviceError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">
-        ⚠️ {{ serviceError }}
-      </div>
-
+      <div *ngIf="serviceError" class="bg-red-100 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">⚠️ {{ serviceError }}</div>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
         <div>
           <label class="block text-gray-700 font-medium mb-1 text-sm">Title</label>
@@ -168,43 +266,37 @@
           </select>
         </div>
       </div>
-
       <div class="mb-4">
         <label class="block text-gray-700 font-medium mb-1 text-sm">Description</label>
         <textarea [(ngModel)]="newService.description" placeholder="Describe your service..."
-          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"
-          rows="3"></textarea>
+          class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" rows="3"></textarea>
       </div>
-
       <div class="mb-6">
         <label class="block text-gray-700 font-medium mb-1 text-sm">Price ($)</label>
         <input [(ngModel)]="newService.price" type="number" placeholder="e.g. 50"
           class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
       </div>
-
       <button (click)="addService()" [disabled]="serviceLoading"
         class="w-full bg-blue-600 text-white py-3 rounded-full font-semibold hover:bg-blue-700 transition disabled:opacity-50">
         {{ serviceLoading ? 'Adding...' : 'Add Service' }}
       </button>
     </div>
 
-    <!-- Success Message -->
-    <div *ngIf="serviceSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">
-      ✅ {{ serviceSuccess }}
-    </div>
+    <!-- Success message after adding or editing a service -->
+    <div *ngIf="serviceSuccess" class="bg-green-100 text-green-700 px-4 py-3 rounded-lg mb-4 text-sm">✅ {{ serviceSuccess }}</div>
 
-    <!-- Services List -->
+    <!-- Empty state shown when the provider has no services yet -->
     <div *ngIf="sortedServices.length === 0" class="text-center text-gray-400 py-8 bg-white rounded-2xl shadow">
       <p class="text-3xl mb-2">🛠️</p>
       <p class="font-semibold">No services yet</p>
       <p class="text-sm">Click "Add Service" to create your first listing.</p>
     </div>
 
+    <!-- Services Grid — loops over sortedServices which reflects the current sort option -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div *ngFor="let service of sortedServices"
-        class="bg-white rounded-2xl shadow p-5 border border-gray-100">
+      <div *ngFor="let service of sortedServices" class="bg-white rounded-2xl shadow p-5 border border-gray-100">
 
-        <!-- View Mode -->
+        <!-- View Mode — shown when this service is not being edited -->
         <div *ngIf="editingServiceId !== service.id">
           <div class="flex justify-between items-start mb-2">
             <div>
@@ -215,31 +307,20 @@
             <p class="text-blue-600 font-bold">${{ service.price }}</p>
           </div>
           <div class="flex gap-3 mt-3">
-            <button (click)="startEditService(service)"
-              class="text-blue-500 text-sm hover:text-blue-700 font-medium transition">
-              ✏️ Edit
-            </button>
-            <button (click)="deleteService(service.id)"
-              class="text-red-500 text-sm hover:text-red-700 font-medium transition">
-              🗑️ Delete
-            </button>
+            <button (click)="startEditService(service)" class="text-blue-500 text-sm hover:text-blue-700 font-medium transition">✏️ Edit</button>
+            <button (click)="deleteService(service.id)" class="text-red-500 text-sm hover:text-red-700 font-medium transition">🗑️ Delete</button>
           </div>
         </div>
 
-        <!-- Edit Mode -->
+        <!-- Edit Mode — shown inline when the provider clicks Edit on a service -->
         <div *ngIf="editingServiceId === service.id">
           <h3 class="text-sm font-bold text-gray-700 mb-3">Editing Service</h3>
-
-          <div *ngIf="editServiceError" class="bg-red-100 text-red-600 px-3 py-2 rounded-lg mb-3 text-xs">
-            ⚠️ {{ editServiceError }}
-          </div>
-
+          <div *ngIf="editServiceError" class="bg-red-100 text-red-600 px-3 py-2 rounded-lg mb-3 text-xs">⚠️ {{ editServiceError }}</div>
           <div class="mb-3">
             <label class="block text-gray-700 font-medium mb-1 text-xs">Title</label>
             <input [(ngModel)]="editServiceForm.title" type="text"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
           </div>
-
           <div class="mb-3">
             <label class="block text-gray-700 font-medium mb-1 text-xs">Category</label>
             <select [(ngModel)]="editServiceForm.category"
@@ -259,39 +340,36 @@
               <option value="General Handyman">General Handyman</option>
             </select>
           </div>
-
           <div class="mb-3">
             <label class="block text-gray-700 font-medium mb-1 text-xs">Description</label>
             <textarea [(ngModel)]="editServiceForm.description" rows="2"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm"></textarea>
           </div>
-
           <div class="mb-4">
             <label class="block text-gray-700 font-medium mb-1 text-xs">Price ($)</label>
             <input [(ngModel)]="editServiceForm.price" type="number"
               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:border-blue-500 text-sm" />
           </div>
-
           <div class="flex gap-2">
             <button (click)="saveEditService(service.id)" [disabled]="editServiceLoading"
               class="flex-1 bg-blue-600 text-white py-2 rounded-full font-semibold hover:bg-blue-700 transition disabled:opacity-50 text-sm">
               {{ editServiceLoading ? 'Saving...' : 'Save' }}
             </button>
             <button (click)="cancelEditService()"
-              class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-full font-semibold hover:bg-gray-200 transition text-sm">
-              Cancel
-            </button>
+              class="flex-1 bg-gray-100 text-gray-600 py-2 rounded-full font-semibold hover:bg-gray-200 transition text-sm">Cancel</button>
           </div>
         </div>
 
       </div>
     </div>
   </div>
+  <!-- ===== END MY SERVICES SECTION ===== -->
 
-  <!-- Incoming Requests Section -->
+  <!-- ===== INCOMING REQUESTS SECTION ===== -->
   <div>
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Incoming Requests</h2>
 
+    <!-- Skeleton loader shown while requests are being fetched -->
     <div *ngIf="loading" class="space-y-4">
       <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
         <div class="flex justify-between items-start mb-4">
@@ -313,22 +391,24 @@
     <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load requests.</div>
 
     <div *ngIf="!loading && !error">
+
+      <!-- Empty state shown when the provider has received no requests yet -->
       <div *ngIf="requests.length === 0" class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
         <p class="text-4xl mb-4">📭</p>
         <p class="font-semibold text-lg">No requests yet</p>
         <p class="text-sm">When customers request your services they will appear here.</p>
       </div>
 
+      <!-- Request cards — each shows the service, customer, status and action buttons -->
       <div class="space-y-4">
-        <div *ngFor="let request of requests"
-          class="bg-white rounded-2xl shadow p-6 border border-gray-100">
-
+        <div *ngFor="let request of requests" class="bg-white rounded-2xl shadow p-6 border border-gray-100">
           <div class="flex justify-between items-start mb-4">
             <div>
               <h3 class="text-lg font-bold text-gray-800">{{ request.service?.title }}</h3>
               <p class="text-gray-500 text-sm">Requested by: <span class="font-medium text-blue-600">{{ request.customer?.username }}</span></p>
               <p class="text-gray-400 text-xs mt-1">{{ request.created_at | date:'medium' }}</p>
             </div>
+            <!-- Status badge — colour changes based on the current request status -->
             <span [class]="
               request.status === 'pending' ? 'bg-yellow-100 text-yellow-700' :
               request.status === 'accepted' ? 'bg-green-100 text-green-700' :
@@ -339,30 +419,26 @@
             </span>
           </div>
 
-          <p *ngIf="request.message" class="text-gray-500 text-sm mb-4 bg-gray-50 rounded-lg p-3">
-            💬 {{ request.message }}
-          </p>
+          <!-- Customer's optional message shown in a subtle box -->
+          <p *ngIf="request.message" class="text-gray-500 text-sm mb-4 bg-gray-50 rounded-lg p-3">💬 {{ request.message }}</p>
 
+          <!-- Accept / Decline buttons shown only for pending requests -->
           <div *ngIf="request.status === 'pending'" class="flex gap-3">
             <button (click)="updateStatus(request.id, 'accepted')"
-              class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition text-sm">
-              ✅ Accept
-            </button>
+              class="bg-green-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-green-700 transition text-sm">✅ Accept</button>
             <button (click)="updateStatus(request.id, 'declined')"
-              class="bg-red-100 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-200 transition text-sm">
-              ❌ Decline
-            </button>
+              class="bg-red-100 text-red-600 px-6 py-2 rounded-full font-semibold hover:bg-red-200 transition text-sm">❌ Decline</button>
           </div>
 
+          <!-- Mark as Completed button shown only for accepted requests -->
           <div *ngIf="request.status === 'accepted'" class="flex gap-3">
             <button (click)="updateStatus(request.id, 'completed')"
-              class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">
-              🏁 Mark as Completed
-            </button>
+              class="bg-blue-600 text-white px-6 py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm">🏁 Mark as Completed</button>
           </div>
-
         </div>
       </div>
     </div>
   </div>
+  <!-- ===== END INCOMING REQUESTS SECTION ===== -->
+
 </div>
