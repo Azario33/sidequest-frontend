@@ -13,27 +13,72 @@
   </div>
 </div>
 
+<!-- Location prompt banner — shown until the customer shares their location -->
+<div *ngIf="showLocationBanner && !customerLocation" class="bg-blue-600 px-4 py-3 text-center">
+  <p class="text-sm text-white flex items-center justify-center gap-3 flex-wrap">
+    <span>📍 Share your location to see how far away each provider is</span>
+    <button (click)="useMyLocation()" [disabled]="locationLoading"
+      class="bg-white text-blue-600 px-4 py-1 rounded-full font-semibold text-sm hover:bg-yellow-300 transition disabled:opacity-50">
+      {{ locationLoading ? 'Getting location...' : 'Use My Location' }}
+    </button>
+    <button (click)="showLocationBanner = false" class="text-blue-200 text-xs hover:text-white transition">
+      Dismiss
+    </button>
+  </p>
+  <p *ngIf="locationError" class="text-red-200 text-xs mt-1">⚠️ {{ locationError }}</p>
+</div>
+
+<!-- Location active banner — shown when customer location is known -->
+<div *ngIf="customerLocation" class="bg-green-50 border-b border-green-100 px-4 py-2 text-center">
+  <p class="text-sm text-green-700 flex items-center justify-center gap-3">
+    <span>📍 Showing distances from your current location</span>
+    <button (click)="clearLocation()" class="text-xs text-gray-500 hover:text-red-500 transition underline">
+      Clear location
+    </button>
+  </p>
+</div>
+
 <!-- Providers List -->
 <div class="max-w-7xl mx-auto px-4 py-12">
 
-  <div class="flex justify-between items-center mb-8">
+  <!-- Toolbar: title, result count, distance filter, sort -->
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
     <div class="flex items-center gap-4">
       <h2 class="text-2xl font-bold text-gray-800">Available Providers</h2>
-      <p *ngIf="searchQuery" class="text-gray-500 text-sm">
-        {{ filteredProviders.length }} result(s) for "{{ searchQuery }}"
+      <p *ngIf="searchQuery || distanceFilter > 0" class="text-gray-500 text-sm">
+        {{ filteredProviders.length }} result(s) found
       </p>
     </div>
-    <div class="flex items-center gap-2">
-      <label class="text-sm text-gray-500 font-medium">Sort by:</label>
-      <select [(ngModel)]="sortOption" (ngModelChange)="onSortChange()"
-        class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
-        <option value="available">Available First</option>
-        <option value="az">A → Z</option>
-        <option value="za">Z → A</option>
-      </select>
+
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- Distance filter — only shown when customer location is set -->
+      <div *ngIf="customerLocation" class="flex items-center gap-2">
+        <label class="text-sm text-gray-500 font-medium">Within:</label>
+        <select [(ngModel)]="distanceFilter" (ngModelChange)="onDistanceFilterChange()"
+          class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+          <option [value]="0">Any distance</option>
+          <option [value]="5">5 km</option>
+          <option [value]="10">10 km</option>
+          <option [value]="25">25 km</option>
+          <option [value]="50">50 km</option>
+        </select>
+      </div>
+
+      <!-- Sort dropdown — includes Nearest First when location is known -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-500 font-medium">Sort by:</label>
+        <select [(ngModel)]="sortOption" (ngModelChange)="onSortChange()"
+          class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+          <option *ngIf="customerLocation" value="nearest">Nearest First</option>
+          <option value="available">Available First</option>
+          <option value="az">A → Z</option>
+          <option value="za">Z → A</option>
+        </select>
+      </div>
     </div>
   </div>
 
+  <!-- Skeleton loader shown while providers are being fetched -->
   <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let i of [1,2,3]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
       <div class="flex items-center gap-4 mb-4">
@@ -53,16 +98,19 @@
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load providers.</div>
 
   <div *ngIf="!loading && !error">
+
+    <!-- Empty state when search or distance filter returns no results -->
     <div *ngIf="filteredProviders.length === 0" class="text-center text-gray-400 py-12">
       <p class="text-4xl mb-4">🔍</p>
-      <p class="font-semibold text-lg">No providers found for "{{ searchQuery }}"</p>
-      <p class="text-sm">Try a different name or location.</p>
+      <p class="font-semibold text-lg">No providers found</p>
+      <p class="text-sm">Try a different name, location, or increase your distance range.</p>
     </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div *ngFor="let provider of filteredProviders"
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100">
 
+        <!-- Avatar and name row -->
         <div class="flex items-center gap-4 mb-4">
           <div class="bg-blue-100 text-blue-600 rounded-full w-14 h-14 flex items-center justify-center text-2xl font-bold">
             {{ provider.user?.username?.charAt(0)?.toUpperCase() }}
@@ -76,13 +124,21 @@
           </div>
         </div>
 
+        <!-- Bio -->
         <p class="text-gray-500 text-sm mb-4">{{ provider.bio || 'No bio provided yet.' }}</p>
 
+        <!-- Location row — shows distance badge if customer location is known, otherwise shows service area text -->
         <div class="flex items-center gap-2 text-sm text-gray-600 mb-4">
           <span>📍</span>
-          <span>{{ provider.service_area || 'Service area not specified' }}</span>
+          <span *ngIf="getDistanceLabel(provider)" class="font-medium text-blue-600">
+            {{ getDistanceLabel(provider) }}
+          </span>
+          <span *ngIf="!getDistanceLabel(provider)">
+            {{ provider.service_area || 'Service area not specified' }}
+          </span>
         </div>
 
+        <!-- View Profile button -->
         <a [href]="'/providers/' + provider.id"
           class="block w-full bg-blue-600 text-white py-2 rounded-full font-semibold hover:bg-blue-700 transition text-sm text-center">
           View Profile

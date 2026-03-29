@@ -3,6 +3,7 @@
   <div *ngIf="error" class="text-center text-red-500 py-12">Failed to load service.</div>
 
   <div *ngIf="!loading && !error && service">
+
     <!-- Back Button -->
     <a href="/services" class="text-blue-600 hover:underline text-sm mb-6 inline-block">← Back to Services</a>
 
@@ -17,14 +18,14 @@
       <h1 class="text-3xl font-bold text-gray-800 mb-3">{{ service.title }}</h1>
       <p class="text-gray-500 text-lg mb-6">{{ service.description }}</p>
 
-      <!-- Price -->
+      <!-- Price and posted date -->
       <div class="flex items-center justify-between mb-8">
         <span class="text-3xl font-bold text-blue-600">${{ service.price }}</span>
         <span class="text-sm text-gray-400">Posted {{ service.created_at | date:'mediumDate' }}</span>
       </div>
 
       <!-- Provider Info -->
-      <div class="bg-gray-50 rounded-xl p-4 mb-8">
+      <div class="bg-gray-50 rounded-xl p-4 mb-6">
         <h3 class="text-sm font-semibold text-gray-500 mb-3">SERVICE PROVIDER</h3>
         <div class="flex items-center gap-4">
           <div class="bg-blue-100 text-blue-600 rounded-full w-12 h-12 flex items-center justify-center text-xl font-bold">
@@ -32,7 +33,11 @@
           </div>
           <div>
             <p class="font-bold text-gray-800">{{ service.provider?.user?.username }}</p>
-            <p class="text-sm text-gray-500">{{ service.provider?.service_area || 'Location not specified' }}</p>
+            <!-- Shows distance if customer location is known, otherwise shows service area -->
+            <p class="text-sm">
+              <span *ngIf="distanceLabel" class="text-blue-600 font-medium">📍 {{ distanceLabel }}</span>
+              <span *ngIf="!distanceLabel" class="text-gray-500">{{ service.provider?.service_area || 'Location not specified' }}</span>
+            </p>
           </div>
           <span [class]="service.provider?.is_available ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
             class="ml-auto text-xs px-2 py-1 rounded-full font-medium">
@@ -42,30 +47,59 @@
         <p class="text-gray-500 text-sm mt-3">{{ service.provider?.bio || 'No bio provided.' }}</p>
       </div>
 
-      <!-- Blocked: provider viewing their own service -->
+      <!-- Approximate Map Location -->
+      <!-- The pin is offset from the real coordinates to protect the provider's address -->
+      <!-- Customers can see the general neighbourhood but not the exact location -->
+      <div *ngIf="showMap" class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-gray-500">APPROXIMATE LOCATION</h3>
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            🔒 Exact address hidden for privacy
+          </span>
+        </div>
+
+        <!-- Read-only Google Map showing the approximate provider area -->
+        <google-map
+          [center]="mapCenter"
+          [zoom]="mapZoom"
+          [options]="mapOptions"
+          width="100%"
+          height="260px">
+
+          <!-- Offset pin — not the exact address -->
+          <map-marker
+            *ngIf="approximatePosition"
+            [position]="approximatePosition"
+            [title]="service.provider?.service_area || 'Provider area'">
+          </map-marker>
+
+        </google-map>
+      </div>
+
+      <!-- Blocked: provider viewing their own service listing -->
       <div *ngIf="isOwnService" class="bg-yellow-50 border border-yellow-100 text-yellow-700 px-6 py-4 rounded-xl text-center font-semibold">
         🛠️ This is your own service listing.
       </div>
 
-      <!-- Blocked: provider viewing someone else's service -->
+      <!-- Blocked: provider viewing a service they do not own -->
       <div *ngIf="isProvider && !isOwnService" class="bg-gray-50 border border-gray-200 text-gray-500 px-6 py-4 rounded-xl text-center">
         👷 Provider accounts cannot request services.
       </div>
 
-      <!-- Customer request flow -->
+      <!-- Customer request flow — only shown to customers -->
       <div *ngIf="!isProvider">
 
-        <!-- Previous Request Notice -->
+        <!-- Previous request notice shown when re-requesting after decline or completion -->
         <div *ngIf="previousRequest" class="bg-blue-50 border border-blue-100 text-blue-700 px-4 py-3 rounded-xl mb-4 text-sm">
           📋 You previously requested this service. Your last message has been pre-filled below — feel free to edit it.
         </div>
 
-        <!-- Error Message -->
+        <!-- Error message shown if the request submission fails -->
         <div *ngIf="errorMessage" class="bg-red-100 text-red-600 px-6 py-4 rounded-xl text-center font-semibold mb-4">
           ⚠️ {{ errorMessage }}
         </div>
 
-        <!-- Request Form -->
+        <!-- Request form shown before a request has been submitted -->
         <div *ngIf="!requestSent && !errorMessage">
           <textarea [(ngModel)]="requestMessage"
             [placeholder]="previousRequest ? 'Edit your message to the provider...' : 'Add a message to the provider (optional)...'"
@@ -75,10 +109,12 @@
             class="w-full bg-blue-600 text-white py-4 rounded-full font-semibold text-lg hover:bg-blue-700 transition disabled:opacity-50">
             {{ requestLoading ? 'Sending Request...' : isLoggedIn ? 'Request This Service' : 'Login to Request' }}
           </button>
-          <p *ngIf="!isLoggedIn" class="text-center text-gray-400 text-sm mt-2">You need to be logged in to request a service.</p>
+          <p *ngIf="!isLoggedIn" class="text-center text-gray-400 text-sm mt-2">
+            You need to be logged in to request a service.
+          </p>
         </div>
 
-        <!-- Success Message -->
+        <!-- Success message shown after a request is submitted successfully -->
         <div *ngIf="requestSent" class="bg-green-100 text-green-700 px-6 py-4 rounded-xl text-center font-semibold">
           ✅ Request sent successfully! The provider will be in touch soon.
         </div>

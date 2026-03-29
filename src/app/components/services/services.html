@@ -13,6 +13,7 @@
   </div>
 </div>
 
+<!-- Guest login nudge banner — only shown to users who are not logged in -->
 <div *ngIf="!isLoggedIn" class="bg-yellow-50 border-b border-yellow-100 px-4 py-3 text-center">
   <p class="text-sm text-yellow-800">
     👋 You're browsing as a guest.
@@ -23,8 +24,42 @@
   </p>
 </div>
 
+<!-- Location prompt banner — asks the customer to share their location -->
+<!-- Hidden once the customer has shared their location -->
+<div *ngIf="showLocationBanner && !customerLocation" class="bg-blue-600 px-4 py-3 text-center">
+  <p class="text-sm text-white flex items-center justify-center gap-3 flex-wrap">
+    <span>📍 Share your location to see how far away each provider is and filter by distance</span>
+    <button (click)="useMyLocation()" [disabled]="locationLoading"
+      class="bg-white text-blue-600 px-4 py-1 rounded-full font-semibold text-sm hover:bg-yellow-300 transition disabled:opacity-50">
+      {{ locationLoading ? '⏳ Getting location...' : 'Use My Location' }}
+    </button>
+    <button (click)="showLocationBanner = false" class="text-blue-200 text-xs hover:text-white transition">
+      Dismiss
+    </button>
+  </p>
+  <!-- Error shown if geolocation is denied or unavailable -->
+  <p *ngIf="locationError" class="text-red-200 text-xs mt-1">⚠️ {{ locationError }}</p>
+</div>
+
+<!-- Location success flash — shown briefly after location is set -->
+<div *ngIf="locationSuccess" class="bg-green-600 px-4 py-2 text-center">
+  <p class="text-sm text-white font-medium">{{ locationSuccess }}</p>
+</div>
+
+<!-- Location active banner — shown when the customer's location is known -->
+<div *ngIf="customerLocation && !locationSuccess" class="bg-green-50 border-b border-green-100 px-4 py-2 text-center">
+  <p class="text-sm text-green-700 flex items-center justify-center gap-3">
+    <span>📍 Showing distances from your current location</span>
+    <button (click)="clearLocation()" class="text-xs text-gray-500 hover:text-red-500 transition underline">
+      Clear location
+    </button>
+  </p>
+</div>
+
+<!-- Services Section -->
 <div class="max-w-7xl mx-auto px-4 py-12">
 
+  <!-- Category Filters -->
   <div *ngIf="categories.length > 0" class="mb-8">
     <h3 class="text-sm font-semibold text-gray-500 mb-3">FILTER BY CATEGORY</h3>
     <div class="flex flex-wrap gap-2">
@@ -41,25 +76,45 @@
     </div>
   </div>
 
-  <div class="flex justify-between items-center mb-8">
+  <!-- Toolbar: title, result count, distance filter and sort dropdown -->
+  <div class="flex flex-wrap justify-between items-center gap-4 mb-8">
     <div class="flex items-center gap-4">
       <h2 class="text-2xl font-bold text-gray-800">Available Services</h2>
-      <p *ngIf="searchQuery || selectedCategory" class="text-gray-500 text-sm">
+      <p *ngIf="searchQuery || selectedCategory || distanceFilter > 0" class="text-gray-500 text-sm">
         {{ filteredServices.length }} result(s) found
       </p>
     </div>
-    <div class="flex items-center gap-2">
-      <label class="text-sm text-gray-500 font-medium">Sort by:</label>
-      <select [(ngModel)]="sortOption" (ngModelChange)="onSortChange()"
-        class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
-        <option value="newest">Newest First</option>
-        <option value="oldest">Oldest First</option>
-        <option value="price_asc">Price: Low to High</option>
-        <option value="price_desc">Price: High to Low</option>
-      </select>
+
+    <div class="flex items-center gap-3 flex-wrap">
+      <!-- Distance filter — only shown when the customer has set their location -->
+      <div *ngIf="customerLocation" class="flex items-center gap-2">
+        <label class="text-sm text-gray-500 font-medium">Within:</label>
+        <select [(ngModel)]="distanceFilter" (ngModelChange)="onDistanceFilterChange()"
+          class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+          <option [value]="0">Any distance</option>
+          <option [value]="5">5 km</option>
+          <option [value]="10">10 km</option>
+          <option [value]="25">25 km</option>
+          <option [value]="50">50 km</option>
+        </select>
+      </div>
+
+      <!-- Sort dropdown — includes Nearest First when location is known -->
+      <div class="flex items-center gap-2">
+        <label class="text-sm text-gray-500 font-medium">Sort by:</label>
+        <select [(ngModel)]="sortOption" (ngModelChange)="onSortChange()"
+          class="px-3 py-2 border border-gray-300 rounded-full text-sm focus:outline-none focus:border-blue-500 bg-white">
+          <option *ngIf="customerLocation" value="nearest">Nearest First</option>
+          <option value="newest">Newest First</option>
+          <option value="oldest">Oldest First</option>
+          <option value="price_asc">Price: Low to High</option>
+          <option value="price_desc">Price: High to Low</option>
+        </select>
+      </div>
     </div>
   </div>
 
+  <!-- Skeleton Loader shown while services are being fetched -->
   <div *ngIf="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     <div *ngFor="let i of [1,2,3,4,5,6]" class="bg-white rounded-2xl shadow p-6 border border-gray-100 animate-pulse">
       <div class="h-5 bg-gray-200 rounded-full w-20 mb-4"></div>
@@ -77,14 +132,16 @@
 
   <div *ngIf="!loading && !error">
 
-    <div *ngIf="filteredServices.length === 0 && (searchQuery || selectedCategory)"
+    <!-- Empty state for search/filter/distance with no results -->
+    <div *ngIf="filteredServices.length === 0 && (searchQuery || selectedCategory || distanceFilter > 0)"
       class="text-center text-gray-400 py-12">
       <p class="text-4xl mb-4">🔍</p>
       <p class="font-semibold text-lg">No services found</p>
-      <p class="text-sm">Try a different keyword or category.</p>
+      <p class="text-sm">Try a different keyword, category or increase your distance range.</p>
     </div>
 
-    <div *ngIf="filteredServices.length === 0 && !searchQuery && !selectedCategory && !isLoggedIn"
+    <!-- Empty state for guests when no services exist -->
+    <div *ngIf="filteredServices.length === 0 && !searchQuery && !selectedCategory && distanceFilter === 0 && !isLoggedIn"
       class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
       <p class="text-4xl mb-4">🛠️</p>
       <p class="font-semibold text-lg text-gray-600">No services available yet</p>
@@ -95,35 +152,50 @@
       </div>
     </div>
 
-    <div *ngIf="filteredServices.length === 0 && !searchQuery && !selectedCategory && isLoggedIn"
+    <!-- Empty state for logged in users when no services exist -->
+    <div *ngIf="filteredServices.length === 0 && !searchQuery && !selectedCategory && distanceFilter === 0 && isLoggedIn"
       class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
       <p class="text-4xl mb-4">🛠️</p>
       <p class="font-semibold text-lg text-gray-600">No services available yet</p>
       <p class="text-sm">Check back soon!</p>
     </div>
 
+    <!-- Services Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div *ngFor="let service of filteredServices"
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 flex flex-col justify-between">
 
+        <!-- Top Section -->
         <div>
           <div class="flex justify-between items-start mb-3">
-            <div class="bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full">{{ service.category }}</div>
+            <div class="bg-blue-100 text-blue-600 text-xs font-semibold px-3 py-1 rounded-full">
+              {{ service.category }}
+            </div>
             <span class="text-xs text-gray-400">{{ service.created_at | date:'mediumDate' }}</span>
           </div>
           <h3 class="text-xl font-bold text-gray-800 mb-2">{{ service.title }}</h3>
           <p class="text-gray-500 text-sm mb-4">{{ service.description }}</p>
         </div>
 
+        <!-- Provider Info -->
         <div class="flex items-center gap-3 mb-4 bg-gray-50 rounded-xl p-3">
           <div class="bg-blue-100 text-blue-600 rounded-full w-9 h-9 flex items-center justify-center text-sm font-bold">
             {{ service.provider?.user?.username?.charAt(0)?.toUpperCase() }}
           </div>
           <div>
-            <a [href]="'/providers/' + service.provider?.id" class="text-sm font-semibold text-blue-600 hover:underline">
+            <a [href]="'/providers/' + service.provider?.id"
+              class="text-sm font-semibold text-blue-600 hover:underline">
               {{ service.provider?.user?.username }}
             </a>
-            <p class="text-xs text-gray-400">{{ service.provider?.service_area || 'Location not specified' }}</p>
+            <!-- Distance badge shown when customer location is set, otherwise shows service area text -->
+            <p class="text-xs text-gray-400">
+              <span *ngIf="getDistanceLabel(service)" class="text-blue-500 font-medium">
+                📍 {{ getDistanceLabel(service) }}
+              </span>
+              <span *ngIf="!getDistanceLabel(service)">
+                {{ service.provider?.service_area || 'Location not specified' }}
+              </span>
+            </p>
           </div>
           <span [class]="service.provider?.is_available ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
             class="ml-auto text-xs px-2 py-1 rounded-full font-medium">
@@ -131,6 +203,7 @@
           </span>
         </div>
 
+        <!-- Bottom Section -->
         <div>
           <div class="flex justify-between items-center">
             <span class="text-blue-600 font-bold text-xl">${{ service.price }}</span>
@@ -139,6 +212,7 @@
               View Details
             </a>
           </div>
+          <!-- Login nudge shown under each card for guests -->
           <p *ngIf="!isLoggedIn" class="text-xs text-gray-400 text-right mt-2">
             <a href="/login" class="text-blue-500 hover:underline">Log in</a> to request this service
           </p>

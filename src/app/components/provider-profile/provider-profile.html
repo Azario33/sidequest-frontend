@@ -18,12 +18,14 @@
         </div>
         <div>
           <h1 class="text-3xl font-bold text-gray-800">{{ provider.user?.username }}</h1>
-          <span [class]="provider.is_available
-            ? 'bg-green-100 text-green-600'
-            : 'bg-red-100 text-red-600'"
+          <span [class]="provider.is_available ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'"
             class="text-xs px-3 py-1 rounded-full font-semibold mt-1 inline-block">
             {{ provider.is_available ? '🟢 Available for work' : '🔴 Unavailable' }}
           </span>
+          <!-- Distance badge shown if the customer has set their location -->
+          <p *ngIf="distanceLabel" class="text-sm text-blue-600 font-medium mt-1">
+            📍 {{ distanceLabel }}
+          </p>
         </div>
       </div>
 
@@ -33,10 +35,39 @@
         <p class="text-gray-600">{{ provider.bio || 'This provider has not added a bio yet.' }}</p>
       </div>
 
-      <!-- Service Area -->
-      <div *ngIf="provider.service_area">
+      <!-- Service Area — shows the general area label, never the exact address -->
+      <div *ngIf="provider.service_area" class="mb-4">
         <h3 class="text-sm font-semibold text-gray-500 mb-1">SERVICE AREA</h3>
         <p class="text-gray-600">📍 {{ provider.service_area }}</p>
+      </div>
+
+      <!-- Approximate Map Location -->
+      <!-- The pin shown here is offset from the real coordinates to protect the provider's privacy -->
+      <!-- Customers can see the general neighbourhood but not the exact address -->
+      <div *ngIf="showMap" class="mt-6">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-gray-500">APPROXIMATE LOCATION</h3>
+          <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded-full">
+            🔒 Exact address is hidden for privacy
+          </span>
+        </div>
+
+        <!-- Google Maps read-only view showing an approximate pin -->
+        <google-map
+          [center]="mapCenter"
+          [zoom]="mapZoom"
+          [options]="mapOptions"
+          width="100%"
+          height="280px">
+
+          <!-- The pin is displayed at a slightly offset position — not the exact address -->
+          <map-marker
+            *ngIf="approximatePosition"
+            [position]="approximatePosition"
+            [title]="provider.service_area || 'Provider area'">
+          </map-marker>
+
+        </google-map>
       </div>
 
     </div>
@@ -44,14 +75,14 @@
     <!-- Services Section -->
     <h2 class="text-2xl font-bold text-gray-800 mb-4">Services by {{ provider.user?.username }}</h2>
 
-    <!-- No services state -->
+    <!-- No services empty state -->
     <div *ngIf="services.length === 0" class="text-center text-gray-400 py-12 bg-white rounded-2xl shadow">
       <p class="text-3xl mb-2">🛠️</p>
       <p class="font-semibold">No services listed yet</p>
       <p class="text-sm">This provider hasn't added any services.</p>
     </div>
 
-    <!-- Services Grid -->
+    <!-- Services Grid — sorted newest first -->
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <div *ngFor="let service of services"
         class="bg-white rounded-2xl shadow-md hover:shadow-xl transition p-6 border border-gray-100 flex flex-col justify-between">

@@ -20,16 +20,28 @@ export class NotificationService implements OnDestroy {
   private pollSubscription: Subscription | null = null;
 
   constructor(private http: HttpClient, private authService: AuthService) {
-    // Start polling when a user is logged in, stop when they log out
+    // Subscribe to auth state changes so we start or stop polling correctly
     this.authService.currentUser$.subscribe(user => {
       if (user) {
-        this.fetchUnreadCount();
-        this.startPolling();
+        // Small delay to ensure the token is fully saved in localStorage before fetching
+        setTimeout(() => {
+          this.fetchUnreadCount();
+          this.startPolling();
+        }, 500);
       } else {
         this.stopPolling();
         this.unreadCountSubject.next(0);
       }
     });
+
+    // Also check immediately on service init in case user is already logged in from a refresh
+    // This handles the case where currentUser$ has already emitted before we subscribed
+    if (this.authService.isLoggedIn() && this.authService.getCurrentUser()) {
+      setTimeout(() => {
+        this.fetchUnreadCount();
+        this.startPolling();
+      }, 500);
+    }
   }
 
   private getHeaders(): HttpHeaders {
@@ -43,8 +55,12 @@ export class NotificationService implements OnDestroy {
   }
 
   // Fetches just the unread count for the navbar badge
+  // Guards against calling when not logged in to prevent 401 errors
   fetchUnreadCount() {
     if (!this.authService.isLoggedIn()) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
     this.http.get<{ count: number }>(`${this.baseUrl}/notifications/unread-count/`, { headers: this.getHeaders() })
       .subscribe({
         next: (res) => this.unreadCountSubject.next(res.count),
